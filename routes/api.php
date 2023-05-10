@@ -24,3 +24,13 @@ Route::post('/sendVerificationOtp', [AuthController::class, 'sendEmailVerificati
 Route::get('/checkOtp', [AuthController::class, 'checkOtp']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('forgot-password', [AuthController::class, 'forgotpassword']);
+Route::post('reset-password', [AuthController::class, 'resetPassword']);
+Route::post('isTokenValid', [AuthController::class, 'isTokenValid']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logoutUser']);
+
+    // Route::middleware('auth.admin')->group(function () {
+    // });
+});
