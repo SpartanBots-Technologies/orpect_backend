@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 use App\Models\User;
+use App\Models\PasswordReset;
 use App\Models\EmailVerification;
 
 class AuthController extends Controller
@@ -170,12 +171,158 @@ class AuthController extends Controller
             $user = Auth::user();
             $token = $user->createToken($user->email.'_api_token')->plainTextToken;
             return response()->json([
+                'status' => true,
                 'user' => $user,
                 'token' => $token,
             ], 200);
+        }else{
+            return response()->json([
+                'status' => false,
+                'messsage' => "Email and password do not match.",
+            ], 401); 
         }
         return response()->json([
+            'status' => false,
             'message' => 'Some error occured',
         ], 401);
+    }
+
+    public function logoutUser(){
+        Auth::user()->tokens()->delete();
+        return response()->json([
+            'status' => true,
+            'message' => "Logout successfully",
+        ], 200);
+    }
+
+    public function forgotpassword(Request $request){
+        $inputValidation = Validator::make($request->all(), [
+            "email" => 'required|email'
+        ]);
+        if($inputValidation->fails()){
+            return response()->json([
+                'status' => false,
+                'message' => 'Email invalid',
+                'errors' => $inputValidation->errors(),
+            ], 422);
+        }
+        $useremail = $request->email;
+        if(User::where('email', '=', $useremail)->exists()){
+            $uid =  Str::uuid()->toString();
+            $domain =  config('services.react.domain');
+
+            $data = [
+                'userName' => $useremail,
+                'CompanyName' => 'Orpect',
+                'link' => $domain.'/reset-password?token='.$uid,
+            ];
+
+            Mail::send('auth.forgotPassEmailTemp', ['data' => $data], function ($message) use ($useremail){
+                $message->from('testspartanbots@gmail.com', 'Orpect');
+                $message->to($useremail)->subject('ORPECT - Password Reset');
+            });
+
+            $datetime = Carbon::now()->format('Y-m-d H:i:s');
+            PasswordReset::updateOrCreate(
+                ['email' => $useremail],
+                [
+                    'email' => $useremail,
+                    'token' => $uid,
+                    'created_at' => $datetime
+                ]
+            );
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Email sent successfully',
+            ], 200);
+        }else{
+            return response()->json([
+                'status' => false,
+                'message' => 'Email id not registered',
+            ], 401);
+        }
+        
+    }
+
+    public function resetPassword(Request $request){
+        // $resetData = PasswordReset::where('token', $request->token)->get();
+        try{
+            $email = DB::table('password_reset_tokens')
+                    ->select('email')
+                    ->where('token', $request->token)
+                    ->value('email');
+            if(isset($request->token) && $email){
+                $inputValidation = Validator::make($request->all(), [
+                    "password" => 'required|confirmed'
+                ]);
+                if($inputValidation->fails()){
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Password does not match',
+                        'errors' => $inputValidation->errors(),
+                    ], 422);
+                }
+
+                $user = User::where('email',$email)->first();
+                $user->fill([
+                    "password" => Hash::make($request->password)
+                ]);
+                $user->save();
+
+                $user->tokens()->delete();
+                PasswordReset::where('email', $email)->delete();
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Password reset successfully'
+                ], 200);
+
+            } else{
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Some error occured please ask for reset link again',
+                ], 401);
+            }
+        }catch(\Exception $e){
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    public function isTokenValid(Request $request){
+        if($request->token != ''){
+            $tokenExists = PasswordReset::select('created_at')->where('token', $request->token)->first();
+            if($tokenExists){
+                $to = Carbon::createFromFormat('Y-m-d H:i:s', $tokenExists->created_at);
+                $from = Carbon::createFromFormat('Y-m-d H:i:s', now());
+                $diff_in_minutes = $to->diffInMinutes($from);
+
+                if($diff_in_minutes <= 10 ){
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Token is valid',
+                    ], 200);
+                }else{
+                    PasswordReset::where('token', $request->token)->delete();
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Token not valid',
+                    ], 400);
+                }
+            }else{
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Token not found',
+                ], 404);
+            }
+        }else{
+            return response()->json([
+                'success' => false,
+                'message' => 'Token not found',
+            ], 404);
+        }
     }
 }
