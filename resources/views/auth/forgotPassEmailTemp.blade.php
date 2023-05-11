@@ -7,7 +7,7 @@
     <h3>Hello!</h3>
     <p>You are receiving this email because we received a password reset request.</p>
     <br>
-    <p>This is your link for password reset : {{$data['link']}}</p>
+    <p>This is your link for password reset : <a href="{{$data['link']}}" target="_blank">Click here</a></p>
     <br>
     <p>This link will only be valid for 10 minutes.</p>
     <br>
