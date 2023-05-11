@@ -92,7 +92,7 @@ class AuthController extends Controller
                     'messsage' => 'Otp matched, Email verified',
                 ], 200);
             }else{
-                EmailVerification::select('created_at')->where('email', $request->email)->where('otp', $request->otp)->delete();
+                EmailVerification::where('email', $request->email)->where('otp', $request->otp)->delete();
                 return response()->json([
                     'status' => false,
                     'message' => 'OTP Expired',
@@ -101,7 +101,7 @@ class AuthController extends Controller
         }else{
             return response()->json([
                 'status' => false,
-                'message' => 'OTP Expired',
+                'message' => 'Invalid OTP',
             ], 404);
         }
     }
@@ -116,6 +116,7 @@ class AuthController extends Controller
             "domainName" => 'required',
             "email" => 'required|email|unique:users,email',
             "password" => 'required|min:6|confirmed',
+            "otp" => 'required',
         ]);
         if($inputValidation->fails()){
             return response()->json([
@@ -123,6 +124,26 @@ class AuthController extends Controller
                 'errors' => $inputValidation->errors(),
             ], 422);
         }		
+        if( EmailVerification::where('email', $request->email)->where('otp', $request->otp)->exists() ){
+            $timeVerification = EmailVerification::select('created_at')->where('email', $request->email)->where('otp', $request->otp)->first();
+            if($timeVerification){
+                $to = Carbon::createFromFormat('Y-m-d H:i:s', $timeVerification->created_at);
+                $from = Carbon::createFromFormat('Y-m-d H:i:s', now());
+                $diff_in_minutes = $to->diffInMinutes($from);
+                EmailVerification::where('email', $request->email)->where('otp', $request->otp)->delete();
+                if($diff_in_minutes > 10 ){
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'OTP Expired',
+                    ], 400);
+                }
+            }
+        }else{
+            return response()->json([
+                'status' => false,
+                'message' => "Invalid OTP",
+            ], 422);
+        }
 
         User::create([
             "company_name" => $request->companyName,
@@ -302,25 +323,25 @@ class AuthController extends Controller
 
                 if($diff_in_minutes <= 10 ){
                     return response()->json([
-                        'success' => true,
+                        'status' => true,
                         'message' => 'Token is valid',
                     ], 200);
                 }else{
                     PasswordReset::where('token', $request->token)->delete();
                     return response()->json([
-                        'success' => false,
+                        'status' => false,
                         'message' => 'Token not valid',
                     ], 400);
                 }
             }else{
                 return response()->json([
-                    'success' => false,
+                    'status' => false,
                     'message' => 'Token not found',
                 ], 404);
             }
         }else{
             return response()->json([
-                'success' => false,
+                'status' => false,
                 'message' => 'Token not found',
             ], 404);
         }
