@@ -25,8 +25,11 @@ class User extends Authenticatable
         'domain_name',
         'email',
         'password',
+        'image',
         'email_verified',
         'coupon',
+        'terms_and_conditions',
+        'is_deleted',
     ];
 
     /**

@@ -11,7 +11,7 @@
     <br>
     <p>This will only be valid for 10 minutes.</p>
     <br>
-    <p>If you did not request a OTP, no further action is required. And Please make sure to change your account's password.</p>
+    <p>If you did not request a OTP, no further action is required.</p>
 
     <br>
     <p>Thank You</p>

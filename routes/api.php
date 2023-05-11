@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\EmployeeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,6 +31,8 @@ Route::post('isTokenValid', [AuthController::class, 'isTokenValid']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logoutUser']);
+
+    Route::post('/addEmployee', [EmployeeController::class, 'addEmployee']);
 
     // Route::middleware('auth.admin')->group(function () {
     // });
