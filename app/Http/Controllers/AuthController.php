@@ -117,6 +117,7 @@ class AuthController extends Controller
             "email" => 'required|email|unique:users,email',
             "password" => 'required|min:6|confirmed',
             "otp" => 'required',
+            "termsNconditions" => 'required',
         ]);
         if($inputValidation->fails()){
             return response()->json([
@@ -145,7 +146,7 @@ class AuthController extends Controller
             ], 422);
         }
 
-        User::create([
+        $user = User::create([
             "company_name" => $request->companyName,
             "company_type" => $request->companyType,
             "full_name" => $request->fullName,
@@ -153,19 +154,15 @@ class AuthController extends Controller
             "domain_name" => $request->domainName,
             "email" => $request->email,
             "password" => Hash::make($request->password),
+            "terms_and_conditions" => $request->termsNconditions,
             "email_verified" => 1,
             "role" => 1
         ]);
 
-        if( Auth::attempt([
-            'email' => $request->input('email'),
-            'password' => $request->input('password')
-        ])){
-            $user = Auth::user();
-            $token = $user->createToken($user->email.'_api_token')->plainTextToken;
+        if( $user ){
             return response()->json([
-                'user' => $user,
-                'token' => $token,
+                'status' => true,
+                'message' => "User successfully registered",
             ], 200);
         }
         return response()->json([
