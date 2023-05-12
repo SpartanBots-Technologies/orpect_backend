@@ -121,6 +121,7 @@ class EmployeeController extends Controller
                                 $image = $uploadPath . $imageName;
                                 file_put_contents($image, $imageContents);
                             }catch(\Exception $e){
+                                dd($e);
                             }
                         }
                     }
@@ -165,5 +166,30 @@ class EmployeeController extends Controller
                 'message' => $e->getMessage(),
             ], 400);
         }
+    }
+
+    public function getCurrentEmployees(){
+        $allCurrentEmplyees = Employee::where('is_deleted', '=', 0)
+                                ->where('ex_employee', '<>', 1)
+                                ->where('non_joiner', '<>', 1)
+                                ->where('added_by', '=', Auth::user()->id)
+                                ->get();
+        return response()->json([
+            'status' => true,
+            'currentEmployees' => $allCurrentEmplyees,
+        ], 200);
+    }
+
+    public function getEmployeeById(string $id){
+        $employeeDetail = Employee::where('is_deleted', '=', 0)
+                                ->where('ex_employee', '<>', 1)
+                                ->where('non_joiner', '<>', 1)
+                                ->where('added_by', '=', Auth::user()->id)
+                                ->where('id', '=', $id)
+                                ->get();
+        return response()->json([
+            'status' => true,
+            'currentEmployees' => $employeeDetail,
+        ], 200);
     }
 }
