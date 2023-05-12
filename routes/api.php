@@ -33,6 +33,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logoutUser']);
 
     Route::post('/addEmployee', [EmployeeController::class, 'addEmployee']);
+    Route::post('/uploadCSV', [EmployeeController::class, 'uploadEmployeeUsingCSV']);
 
     // Route::middleware('auth.admin')->group(function () {
     // });
