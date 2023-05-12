@@ -34,6 +34,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/addEmployee', [EmployeeController::class, 'addEmployee']);
     Route::post('/uploadCSV', [EmployeeController::class, 'uploadEmployeeUsingCSV']);
+    Route::get('/getCurrentEmployees', [EmployeeController::class, 'getCurrentEmployees']);
+    Route::get('/getEmployeeById/{id}', [EmployeeController::class, 'getEmployeeById']);
 
     // Route::middleware('auth.admin')->group(function () {
     // });
