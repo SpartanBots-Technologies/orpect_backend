@@ -275,6 +275,24 @@ class EmployeeController extends Controller
         ], 200);
     }
 
+    public function deleteEmployee(string $id){
+        $employee = Employee::find($id);
+        if ($employee) {
+            $employee->update([
+                'is_deleted' => 1
+            ]);
+            return response()->json([
+                'status' => true,
+                'messsage' => 'Successfully deleted',
+            ], 200);
+        }else{
+            return response()->json([
+                'status' => false,
+                'messsage' => 'Employee not found',
+            ], 404);
+        }
+    }
+
     public function getExEmployees(){
         $employeeDetail = Employee::where('added_by', '=', Auth::user()->id)
                                 ->where('ex_employee', '=', 1)
@@ -299,5 +317,48 @@ class EmployeeController extends Controller
             'status' => true,
             'nonJoiners' => $employeeDetail,
         ], 200);
+    }
+
+    public function rateAndReview(Request $request, string $id){
+        $inputValidation = Validator::make($request->all(), [
+            "exEmployee" => 'required',
+            "nonJoiner" => 'required',
+            "rating" => 'required',
+            "review" => 'required',
+            "dateOfLeaving" => 'required',
+        ]);
+        if($inputValidation->fails()){
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid data entered',
+                'errors' => $inputValidation->errors(),
+            ], 422);
+        }
+        try{
+            $employeeDetails = employee::find($id);
+
+            $employee = $employeeDetails->update([
+                'ex_employee' => $request->exEmployee,
+                'non_joiner' => $request->nonJoiner,
+                'rating' => $request->rating,
+                'review' => $request->review,
+                'date_of_leaving' => $request->dateOfLeaving,
+            ]);
+            if($employee){
+                return response()->json([
+                    'status' => true,
+                    'message' => "Saved successfully",
+                ], 200);
+            }
+            return response()->json([
+                'status' => false,
+                'message' => "some error occured",
+            ], 400);
+        }catch(\Exception $e){
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
     }
 }
