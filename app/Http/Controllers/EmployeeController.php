@@ -89,6 +89,7 @@ class EmployeeController extends Controller
             $added_by = Auth::user()->id;
             $image = '';
             $imgFolderPath = $request->image_path;
+            dump($imgFolderPath);
             $file = $request->file('csv_file');
             $filePath = $file->getRealPath();
             $handle = fopen($filePath, 'r');
@@ -119,6 +120,7 @@ class EmployeeController extends Controller
                         $imagePath = $imgFolderPath . '/' . $emp_image;
                         dump(file_exists($imagePath));
                         dump(is_readable($imagePath));
+                        dd($imagePath);
                         dump(Storage::get($imagePath));
                         dump(file_get_contents($imagePath));
                         dd($imagePath);
@@ -205,7 +207,7 @@ class EmployeeController extends Controller
                                 ->get();
         return response()->json([
             'status' => true,
-            'currentEmployees' => $employeeDetail,
+            'employee' => $employeeDetail,
         ], 200);
     }
 }
