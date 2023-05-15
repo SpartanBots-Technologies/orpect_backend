@@ -39,6 +39,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/getExEmployees', [EmployeeController::class, 'getExEmployees']);
     Route::get('/getNonJoiners', [EmployeeController::class, 'getNonJoiners']);
     Route::post('/updateEmployee/{id}', [EmployeeController::class, 'updateEmployee']);
+    Route::delete('/deleteEmployee/{id}', [EmployeeController::class, 'deleteEmployee']);
+    Route::post('/rateAndReview/{id}', [EmployeeController::class, 'rateAndReview']);
 
     // Route::middleware('auth.admin')->group(function () {
     // });
