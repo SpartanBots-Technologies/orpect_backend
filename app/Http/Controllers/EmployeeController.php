@@ -89,7 +89,6 @@ class EmployeeController extends Controller
             $added_by = Auth::user()->id;
             $image = '';
             $imgFolderPath = $request->image_path;
-            dump($imgFolderPath);
             $file = $request->file('csv_file');
             $filePath = $file->getRealPath();
             $handle = fopen($filePath, 'r');
@@ -118,12 +117,12 @@ class EmployeeController extends Controller
                 if ($emp_id != "" && $emp_name != "" && $emp_email != "" && $emp_phone != "") {
                     if ($imgFolderPath != "" && $emp_image != "") {
                         $imagePath = $imgFolderPath . '/' . $emp_image;
-                        dump(file_exists($imagePath));
-                        dump(is_readable($imagePath));
-                        dd($imagePath);
-                        dump(Storage::get($imagePath));
-                        dump(file_get_contents($imagePath));
-                        dd($imagePath);
+                        // dump(file_exists($imagePath));
+                        // dump(is_readable($imagePath));
+                        // dd($imagePath);
+                        // dump(Storage::get($imagePath));
+                        // dump(file_get_contents($imagePath));
+                        // dd($imagePath);
                         if (file_exists($imagePath) && is_readable($imagePath)) {
                             $randomNumber = random_int(100000, 999999);
                             $date = date('YmdHis');
@@ -165,7 +164,6 @@ class EmployeeController extends Controller
     
             fclose($handle);
     
-            
             if($successCounter){
                 return response()->json([
                     'status' => true,
@@ -187,10 +185,11 @@ class EmployeeController extends Controller
     }
 
     public function getCurrentEmployees(){
-        $allCurrentEmplyees = Employee::where('is_deleted', '=', 0)
+        $allCurrentEmplyees = Employee::where('added_by', '=', Auth::user()->id)
                                 ->where('ex_employee', '<>', 1)
                                 ->where('non_joiner', '<>', 1)
-                                ->where('added_by', '=', Auth::user()->id)
+                                ->where('is_deleted', '=', 0)
+                                ->orderBy('created_at', 'desc')
                                 ->get();
         return response()->json([
             'status' => true,
@@ -199,15 +198,39 @@ class EmployeeController extends Controller
     }
 
     public function getEmployeeById(string $id){
-        $employeeDetail = Employee::where('is_deleted', '=', 0)
-                                ->where('ex_employee', '<>', 1)
-                                ->where('non_joiner', '<>', 1)
-                                ->where('added_by', '=', Auth::user()->id)
+        $employeeDetail = Employee::where('added_by', '=', Auth::user()->id)
+                                ->where('is_deleted', '=', 0)
                                 ->where('id', '=', $id)
                                 ->get();
         return response()->json([
             'status' => true,
             'employee' => $employeeDetail,
+        ], 200);
+    }
+
+    public function getExEmployees(){
+        $employeeDetail = Employee::where('added_by', '=', Auth::user()->id)
+                                ->where('ex_employee', '=', 1)
+                                ->where('non_joiner', '<>', 1)
+                                ->where('is_deleted', '=', 0)
+                                ->orderBy('date_of_leaving', 'desc')
+                                ->get();
+        return response()->json([
+            'status' => true,
+            'exEmployee' => $employeeDetail,
+        ], 200);
+    }
+
+    public function getNonJoiners(){
+        $employeeDetail = Employee::where('added_by', '=', Auth::user()->id)
+                                ->where('non_joiner', '=', 1)
+                                ->where('ex_employee', '<>', 1)
+                                ->where('is_deleted', '=', 0)
+                                ->orderBy('date_of_leaving', 'desc')
+                                ->get();
+        return response()->json([
+            'status' => true,
+            'nonJoiners' => $employeeDetail,
         ], 200);
     }
 }
