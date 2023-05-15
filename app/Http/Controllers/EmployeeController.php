@@ -116,7 +116,7 @@ class EmployeeController extends Controller
     
                 if ($emp_id != "" && $emp_name != "" && $emp_email != "" && $emp_phone != "") {
                     if ($imgFolderPath != "" && $emp_image != "") {
-                        $imagePath = $imgFolderPath . '/' . $emp_image;
+                        $imagePath = $imgFolderPath . '\\' . $emp_image;
     
                         if (file_exists($imagePath) && is_readable($imagePath)) {
                             $randomNumber = random_int(100000, 999999);
