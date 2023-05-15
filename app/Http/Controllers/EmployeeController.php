@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
@@ -84,9 +85,9 @@ class EmployeeController extends Controller
                 'errors' => $inputValidation->errors(),
             ], 422);
         }
-        try{
+        try {
             $added_by = Auth::user()->id;
-            $image = "";
+            $image = '';
             $imgFolderPath = $request->image_path;
             $file = $request->file('csv_file');
             $filePath = $file->getRealPath();
@@ -95,11 +96,16 @@ class EmployeeController extends Controller
             $lineNumber = 0;
             $errCounter = 0;
             $successCounter = 0;
+    
+            DB::beginTransaction();
+    
             while (($data = fgetcsv($handle)) !== false) {
                 $lineNumber++;
+    
                 if ($lineNumber === 1) {
                     continue;
                 }
+    
                 $emp_id = $data[1];
                 $emp_name = $data[2];
                 $emp_email = $data[3];
@@ -107,24 +113,24 @@ class EmployeeController extends Controller
                 $emp_position = $data[5];
                 $emp_doj = $data[6];
                 $emp_image = $data[7];
-                if( $emp_id != "" && $emp_name != "" && $emp_email != "" && $emp_phone != "" ){
-                    if( $imgFolderPath != "" ){
-                        if( $emp_image != "" ){
-                            try{
-                                $imageContents = file_get_contents( $imgFolderPath."/".$emp_image );
-                                $randomNumber = random_int(100000, 999999);
-                                $date = date('YmdHis');
-                                $filename = "IMG_" . $randomNumber . "_" . $date;
-                                $extension = pathinfo($imgFolderPath."/".$emp_image, PATHINFO_EXTENSION);
-                                $imageName = $filename . '.' . $extension;
-                                $uploadPath = "uploads/users/profile_images/";
-                                $image = $uploadPath . $imageName;
-                                file_put_contents($image, $imageContents);
-                            }catch(\Exception $e){
-                                dd($e);
-                            }
+    
+                if ($emp_id != "" && $emp_name != "" && $emp_email != "" && $emp_phone != "") {
+                    if ($imgFolderPath != "" && $emp_image != "") {
+                        $imagePath = $imgFolderPath . '/' . $emp_image;
+    
+                        if (file_exists($imagePath) && is_readable($imagePath)) {
+                            $randomNumber = random_int(100000, 999999);
+                            $date = date('YmdHis');
+                            $filename = "IMG_" . $randomNumber . "_" . $date;
+                            $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
+                            $imageName = $filename . '.' . $extension;
+                            $uploadPath = "uploads/users/profile_images/";
+                            $image = $uploadPath . $imageName;
+    
+                            Storage::put($image, file_get_contents($imagePath));
                         }
                     }
+    
                     $employee = Employee::create([
                         'emp_id' => $emp_id,
                         'emp_name' => $emp_name,
@@ -135,8 +141,9 @@ class EmployeeController extends Controller
                         'profile_image' => $image,
                         'added_by' => $added_by,
                     ]);
+    
                     $successCounter++;
-                }else{
+                } else {
                     $errCounter++;
                     $dataError = [
                         "emp_id" => $emp_id,
@@ -147,6 +154,11 @@ class EmployeeController extends Controller
                     $dataUnableToInsert[$errCounter] = $dataError;
                 }
             }
+    
+            DB::commit();
+    
+            fclose($handle);
+    
             
             if($successCounter){
                 return response()->json([
