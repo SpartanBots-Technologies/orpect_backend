@@ -38,6 +38,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/getEmployeeById/{id}', [EmployeeController::class, 'getEmployeeById']);
     Route::get('/getExEmployees', [EmployeeController::class, 'getExEmployees']);
     Route::get('/getNonJoiners', [EmployeeController::class, 'getNonJoiners']);
+    Route::post('/updateEmployee/{id}', [EmployeeController::class, 'updateEmployee']);
 
     // Route::middleware('auth.admin')->group(function () {
     // });
