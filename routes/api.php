@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,7 +42,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/updateEmployee/{id}', [EmployeeController::class, 'updateEmployee']);
     Route::delete('/deleteEmployee/{id}', [EmployeeController::class, 'deleteEmployee']);
     Route::post('/rateAndReview/{id}', [EmployeeController::class, 'rateAndReview']);
-
+    
+    Route::post('/addPositions', [UserController::class, 'addPositions']);
+    Route::get('/getPositions', [UserController::class, 'getPositions']);
+    Route::delete('/removePosition/{id}', [UserController::class, 'removePosition']);
     // Route::middleware('auth.admin')->group(function () {
     // });
 });
