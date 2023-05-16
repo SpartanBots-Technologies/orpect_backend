@@ -269,10 +269,17 @@ class EmployeeController extends Controller
                                 ->where('is_deleted', '=', 0)
                                 ->where('id', '=', $id)
                                 ->get();
-        return response()->json([
-            'status' => true,
-            'employee' => $employeeDetail,
-        ], 200);
+        if($employeeDetail){
+            return response()->json([
+                'status' => true,
+                'employee' => $employeeDetail,
+            ], 200);
+        }else{
+            return response()->json([
+                'status' => false,
+                'message' => "Employee Not Found",
+            ], 404);
+        }
     }
 
     public function deleteEmployee(string $id){
