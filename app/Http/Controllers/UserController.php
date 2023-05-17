@@ -42,7 +42,10 @@ class UserController extends Controller
     }
 
     public function getPositions(){
-        $positions = Position::where('added_by', Auth::user()->id)->get();
+        $positions = Position::select('id', 'position')
+                    ->where('added_by', Auth::user()->id)
+                    ->orWhere('added_by', 0)
+                    ->get();
         return response()->json([
             'status' => true,
             'positions' => $positions,
