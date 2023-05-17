@@ -21,6 +21,7 @@ class EmployeeController extends Controller
             "position" => 'required',
             "dateOfJoining" => 'required',
             'image' => 'required|file|mimes:jpg,jpeg,png|max:2048',
+            'linkedIn' => 'sometimes|url',
         ]);
         if($inputValidation->fails()){
             return response()->json([
@@ -55,6 +56,13 @@ class EmployeeController extends Controller
                 'date_of_joining' => $request->dateOfJoining,
                 'profile_image' => $image,
                 'added_by' => $added_by,
+                'date_of_birth' => $request->dateOfBirth,
+                'emp_pan' => $request->pan_number,
+                'permanent_address' => $request->permanentAddress,
+                'city' => $request->city,
+                'country' => $request->country,
+                'state' => $request->state,
+                'linked_in' => $request->linkedIn,
             ]);
             if($employee){
                 return response()->json([
@@ -83,6 +91,7 @@ class EmployeeController extends Controller
             "position" => 'required',
             "dateOfJoining" => 'required',
             'image' => 'sometimes|file|mimes:jpg,jpeg,png|max:2048',
+            'linkedIn' => 'sometimes|url',
         ]);
         if($inputValidation->fails()){
             return response()->json([
@@ -122,6 +131,13 @@ class EmployeeController extends Controller
                 'position' => $request->position,
                 'date_of_joining' => $request->dateOfJoining,
                 'profile_image' => $image,
+                'date_of_birth' => $request->dateOfBirth,
+                'emp_pan' => $request->pan_number,
+                'permanent_address' => $request->permanentAddress,
+                'city' => $request->city,
+                'country' => $request->country,
+                'state' => $request->state,
+                'linked_in' => $request->linkedIn,
             ]);
             if($employee){
                 return response()->json([
@@ -367,5 +383,30 @@ class EmployeeController extends Controller
                 'message' => $e->getMessage(),
             ], 400);
         }
+    }
+
+    public function searchEmployeeGlobally(Request $request){
+        $searchText = $request->searchText;
+        $employees = Employee::where(function ($query) use ($searchText) {
+                        $query->where('emp_name', 'like', '%' . $searchText . '%')
+                            ->orWhere('email', 'like', '%' . $searchText . '%')
+                            ->orWhere('phone', 'like', '%' . $searchText . '%');
+                    })
+                    ->where(function ($query) {
+                        $query->where('ex_employee', 1)
+                            ->orWhere('non_joiner', 1);
+                    })
+                    ->paginate(12);
+
+        if($employees){
+            return response()->json([
+                'status' => true,
+                'employees' => $employees,
+            ], 200);
+        }
+        return response()->json([
+            'status' => false,
+            'message' => "No record found",
+        ], 404);
     }
 }
