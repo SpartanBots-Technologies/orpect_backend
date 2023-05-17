@@ -42,6 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/updateEmployee/{id}', [EmployeeController::class, 'updateEmployee']);
     Route::delete('/deleteEmployee/{id}', [EmployeeController::class, 'deleteEmployee']);
     Route::post('/rateAndReview/{id}', [EmployeeController::class, 'rateAndReview']);
+    Route::get('/searchEmployeeGlobally', [EmployeeController::class, 'searchEmployeeGlobally']);
     
     Route::post('/addPositions', [UserController::class, 'addPositions']);
     Route::get('/getPositions', [UserController::class, 'getPositions']);

@@ -24,5 +24,12 @@ class Employee extends Model
             'review',
             'added_by',
             'is_deleted',
+            'date_of_birth',
+            'emp_pan',
+            'permanent_address',
+            'city',
+            'country',
+            'state',
+            'linked_in',
     ];
 }
