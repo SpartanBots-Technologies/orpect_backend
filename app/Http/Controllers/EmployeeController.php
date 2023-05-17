@@ -269,7 +269,7 @@ class EmployeeController extends Controller
 
     public function getCurrentEmployees(Request $request){
         $searchValue = $request->input('searchText', '');
-        $dropdown = $request->input('dropdown', '');
+        $position = $request->input('position', '');
 
         $query = Employee::where('added_by', '=', Auth::user()->id)
             ->where('ex_employee', '=', 0)
@@ -284,8 +284,8 @@ class EmployeeController extends Controller
             });
         }
 
-        if (!empty($dropdown)) {
-            $query->where('position', '=', $dropdown);
+        if (!empty($position)) {
+            $query->where('position', '=', $position);
         }
 
         $allCurrentEmployees = $query->orderBy('created_at', 'desc')
