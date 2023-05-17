@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\PasswordReset;
 use App\Models\EmailVerification;
+use App\Models\Position;
 
 class AuthController extends Controller
 {
@@ -145,7 +146,7 @@ class AuthController extends Controller
                 'message' => "Invalid OTP",
             ], 422);
         }
-
+        $positionArr = ['Developer', 'Designer', 'Tester'];
         $user = User::create([
             "company_name" => $request->companyName,
             "company_type" => $request->companyType,
@@ -158,7 +159,12 @@ class AuthController extends Controller
             "email_verified" => 1,
             "role" => 1
         ]);
-
+        foreach($positionArr as $position){
+            Position::create([
+                "position" => $position,
+                "added_by" => $user->id,
+            ]);
+        }
         if( $user ){
             return response()->json([
                 'status' => true,
