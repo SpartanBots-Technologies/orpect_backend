@@ -269,8 +269,8 @@ class EmployeeController extends Controller
 
     public function getCurrentEmployees(){
         $allCurrentEmplyees = Employee::where('added_by', '=', Auth::user()->id)
-                                ->where('ex_employee', '<>', 1)
-                                ->where('non_joiner', '<>', 1)
+                                ->where('ex_employee', '=', 0)
+                                ->where('non_joiner', '=', 0)
                                 ->where('is_deleted', '=', 0)
                                 ->orderBy('created_at', 'desc')
                                 ->get();
