@@ -267,16 +267,48 @@ class EmployeeController extends Controller
         }
     }
 
-    public function getCurrentEmployees(){
-        $allCurrentEmplyees = Employee::where('added_by', '=', Auth::user()->id)
-                                ->where('ex_employee', '=', 0)
-                                ->where('non_joiner', '=', 0)
-                                ->where('is_deleted', '=', 0)
-                                ->orderBy('created_at', 'desc')
-                                ->paginate(10);
+    public function getCurrentEmployees(Request $request){
+        $searchValue = $request->input('searchText', '');
+        $dropdown = $request->input('dropdown', '');
+
+        $query = Employee::where('added_by', '=', Auth::user()->id)
+            ->where('ex_employee', '=', 0)
+            ->where('non_joiner', '=', 0)
+            ->where('is_deleted', '=', 0);
+
+        if (!empty($searchValue)) {
+            $query->where(function ($query) use ($searchValue) {
+                $query->where('emp_name', 'LIKE', "%$searchValue%")
+                    ->orWhere('email', 'LIKE', "%$searchValue%")
+                    ->orWhere('phone', 'LIKE', "%$searchValue%");
+            });
+        }
+
+        if (!empty($dropdown)) {
+            $query->where('position', '=', $dropdown);
+        }
+
+        $allCurrentEmployees = $query->orderBy('created_at', 'desc')
+        ->paginate(10);
+
+    // dd($allCurrentEmployees);
+        // $searchValue = "";
+        // $dropdown = "";
+        // if( $request->has('searchText') ){
+        //     $searchValue = $request->searchText;
+        // }
+        // if( $request->has('dropdown') ){
+        //     $dropdown = $request->dropdown;
+        // }
+        // $allCurrentEmployees = Employee::where('added_by', '=', Auth::user()->id)
+        //                         ->where('ex_employee', '=', 0)
+        //                         ->where('non_joiner', '=', 0)
+        //                         ->where('is_deleted', '=', 0)
+        //                         ->orderBy('created_at', 'desc')
+        //                         ->paginate(10);
         return response()->json([
             'status' => true,
-            'currentEmployees' => $allCurrentEmplyees,
+            'currentEmployees' => $allCurrentEmployees,
         ], 200);
     }
 
