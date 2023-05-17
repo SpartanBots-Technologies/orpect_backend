@@ -273,7 +273,7 @@ class EmployeeController extends Controller
                                 ->where('non_joiner', '=', 0)
                                 ->where('is_deleted', '=', 0)
                                 ->orderBy('created_at', 'desc')
-                                ->get();
+                                ->paginate(10);
         return response()->json([
             'status' => true,
             'currentEmployees' => $allCurrentEmplyees,
@@ -322,7 +322,7 @@ class EmployeeController extends Controller
                                 ->where('non_joiner', '<>', 1)
                                 ->where('is_deleted', '=', 0)
                                 ->orderBy('date_of_leaving', 'desc')
-                                ->get();
+                                ->paginate(10);
         return response()->json([
             'status' => true,
             'exEmployee' => $employeeDetail,
@@ -335,7 +335,7 @@ class EmployeeController extends Controller
                                 ->where('ex_employee', '<>', 1)
                                 ->where('is_deleted', '=', 0)
                                 ->orderBy('date_of_leaving', 'desc')
-                                ->get();
+                                ->paginate(10);
         return response()->json([
             'status' => true,
             'nonJoiners' => $employeeDetail,
