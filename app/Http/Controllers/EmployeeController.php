@@ -291,21 +291,6 @@ class EmployeeController extends Controller
         $allCurrentEmployees = $query->orderBy('created_at', 'desc')
         ->paginate(10);
 
-    // dd($allCurrentEmployees);
-        // $searchValue = "";
-        // $dropdown = "";
-        // if( $request->has('searchText') ){
-        //     $searchValue = $request->searchText;
-        // }
-        // if( $request->has('dropdown') ){
-        //     $dropdown = $request->dropdown;
-        // }
-        // $allCurrentEmployees = Employee::where('added_by', '=', Auth::user()->id)
-        //                         ->where('ex_employee', '=', 0)
-        //                         ->where('non_joiner', '=', 0)
-        //                         ->where('is_deleted', '=', 0)
-        //                         ->orderBy('created_at', 'desc')
-        //                         ->paginate(10);
         return response()->json([
             'status' => true,
             'currentEmployees' => $allCurrentEmployees,
@@ -348,29 +333,60 @@ class EmployeeController extends Controller
         }
     }
 
-    public function getExEmployees(){
-        $employeeDetail = Employee::where('added_by', '=', Auth::user()->id)
-                                ->where('ex_employee', '=', 1)
-                                ->where('non_joiner', '<>', 1)
-                                ->where('is_deleted', '=', 0)
-                                ->orderBy('date_of_leaving', 'desc')
-                                ->paginate(10);
+    public function getExEmployees(Request $request){
+        $searchValue = $request->input('searchText', '');
+        $position = $request->input('position', '');
+        $query = Employee::where('added_by', '=', Auth::user()->id)
+                    ->where('ex_employee', '=', 1)
+                    ->where('non_joiner', '=', 0)
+                    ->where('is_deleted', '=', 0);
+
+        if (!empty($searchValue)) {
+            $query->where(function ($query) use ($searchValue) {
+                $query->where('emp_name', 'LIKE', "%$searchValue%")
+                    ->orWhere('email', 'LIKE', "%$searchValue%")
+                    ->orWhere('phone', 'LIKE', "%$searchValue%");
+            });
+        }
+
+        if (!empty($position)) {
+            $query->where('position', '=', $position);
+        }
+
+        $employeeDetails = $query->orderBy('date_of_leaving', 'desc')
+        ->paginate(10);
+
         return response()->json([
             'status' => true,
-            'exEmployee' => $employeeDetail,
+            'exEmployee' => $employeeDetails,
         ], 200);
     }
 
-    public function getNonJoiners(){
-        $employeeDetail = Employee::where('added_by', '=', Auth::user()->id)
-                                ->where('non_joiner', '=', 1)
-                                ->where('ex_employee', '<>', 1)
-                                ->where('is_deleted', '=', 0)
-                                ->orderBy('date_of_leaving', 'desc')
-                                ->paginate(10);
+    public function getNonJoiners(Request $request){
+        $searchValue = $request->input('searchText', '');
+        $position = $request->input('position', '');
+        $query = Employee::where('added_by', '=', Auth::user()->id)
+                    ->where('non_joiner', '=', 1)
+                    ->where('ex_employee', '=', 0)
+                    ->where('is_deleted', '=', 0);
+
+        if (!empty($searchValue)) {
+            $query->where(function ($query) use ($searchValue) {
+                $query->where('emp_name', 'LIKE', "%$searchValue%")
+                    ->orWhere('email', 'LIKE', "%$searchValue%")
+                    ->orWhere('phone', 'LIKE', "%$searchValue%");
+            });
+        }
+
+        if (!empty($position)) {
+            $query->where('position', '=', $position);
+        }
+
+        $employeeDetails = $query->orderBy('date_of_leaving', 'desc')
+        ->paginate(10);
         return response()->json([
             'status' => true,
-            'nonJoiners' => $employeeDetail,
+            'nonJoiners' => $employeeDetails,
         ], 200);
     }
 
