@@ -452,4 +452,8 @@ class EmployeeController extends Controller
             'message' => "No record found",
         ], 404);
     }
+
+    public function activeejjjj55(Request $request){
+        
+    }
 }
