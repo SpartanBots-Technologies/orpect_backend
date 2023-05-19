@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\File;
 use App\Models\User;
 use App\Models\Position;
 
@@ -13,6 +14,7 @@ class UserController extends Controller
 {
     public function updateProfile(Request $request){
         $inputValidation = Validator::make($request->all(), [
+            "logoImage" => 'sometimes|file|mimes:jpg,jpeg,png|max:2048',
             "companyName" => 'required',
             "companyType" => 'required',
             "fullName" => 'required',
@@ -25,16 +27,38 @@ class UserController extends Controller
             ], 422);
         }
         $user = User::find(Auth::user()->id);
+        $oldLogoImage = $request->input('oldLogoImage', null);
+        $image = null;
+        if($request->hasFile('logoImage')){
+            $randomNumber = random_int(1000, 9999);
+            $file = $request->logoImage;
+            $date = date('YmdHis');
+            $filename = "LOGO_IMG_" . $randomNumber . "_" . $date;
+            $extension = strtolower( $file->getClientOriginalExtension() );
+            $imageName = $filename . '.' . $extension;
+            $uploadPath = "uploads/users/logo_images/";
+            $imageUrl = $uploadPath . $imageName;
+            $file->move($uploadPath, $imageName);
+            $image = $imageUrl;
+            if($oldLogoImage != "" && File::exists($oldLogoImage)){
+                File::delete($oldLogoImage);
+            }
+        }else{
+            $image = $oldLogoImage;
+        }
         $userUpdated = $user->update([
+            "image" => $image,
             "company_name" => $request->companyName,
             "company_type" => $request->companyType,
             "full_name" => $request->fullName,
             "designation" => $request->designation,
         ]);
         if( $userUpdated ){
+            $updatedUser = User::find($user->id);
             return response()->json([
                 'status' => true,
                 'message' => "User successfully updated",
+                'user' => $updatedUser,
             ], 200);
         }
         return response()->json([
