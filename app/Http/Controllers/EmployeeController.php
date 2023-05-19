@@ -200,12 +200,7 @@ class EmployeeController extends Controller
                 if ($emp_id != "" && $emp_name != "" && $emp_email != "" && $emp_phone != "") {
                     if ($imgFolderPath != "" && $emp_image != "") {
                         $imagePath = $imgFolderPath . '/' . $emp_image;
-                        // dump(file_exists($imagePath));
-                        // dump(is_readable($imagePath));
-                        // dd($imagePath);
-                        // dump(Storage::get($imagePath));
-                        // dump(file_get_contents($imagePath));
-                        // dd($imagePath);
+
                         if (file_exists($imagePath) && is_readable($imagePath)) {
                             $randomNumber = random_int(100000, 999999);
                             $date = date('YmdHis');
