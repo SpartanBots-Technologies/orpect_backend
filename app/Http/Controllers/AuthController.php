@@ -125,7 +125,7 @@ class AuthController extends Controller
                 'message' => 'Invalid data entered',
                 'errors' => $inputValidation->errors(),
             ], 422);
-        }		
+        }
         if( EmailVerification::where('email', $request->email)->where('otp', $request->otp)->exists() ){
             $timeVerification = EmailVerification::select('created_at')->where('email', $request->email)->where('otp', $request->otp)->first();
             if($timeVerification){
@@ -146,6 +146,13 @@ class AuthController extends Controller
                 'message' => "Invalid OTP",
             ], 422);
         }
+        if( User::where('domain_name', $request->domainName)->exists() ){
+            return response()->json([
+                "status" => false,
+                'message' => 'Domain already Exists',
+            ], 422);
+        }
+
         $positionArr = ['Developer', 'Designer', 'Tester'];
         $user = User::create([
             "company_name" => $request->companyName,
