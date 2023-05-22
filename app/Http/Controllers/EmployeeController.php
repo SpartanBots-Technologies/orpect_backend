@@ -461,13 +461,14 @@ class EmployeeController extends Controller
         $employees = Employee::where(function ($query) use ($searchText) {
                         $query->where('emp_name', 'like', '%' . $searchText . '%')
                             ->orWhere('email', 'like', '%' . $searchText . '%')
+                            ->orWhere('emp_pan', 'like', '%' . $searchText . '%')
                             ->orWhere('phone', 'like', '%' . $searchText . '%');
                     })
                     ->where(function ($query) {
                         $query->where('ex_employee', 1)
                             ->orWhere('non_joiner', 1);
                     })
-                    ->paginate(12);
+                    ->paginate(10);
 
         if($employees){
             return response()->json([
