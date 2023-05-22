@@ -15,7 +15,7 @@ class UserController extends Controller
     public function getUser(){
         $currentUser = User::where('is_deleted', 0)
                     ->where('id', Auth::user()->id)
-                    ->get();
+                    ->first();
         if($currentUser){
             return response()->json([
                 'status' => true,
