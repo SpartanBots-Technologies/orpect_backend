@@ -7,9 +7,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
+
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
+use ZipArchive;
 use App\Models\Employee;
+
 class EmployeeController extends Controller
 {
     public function addEmployee(Request $request){
@@ -160,18 +163,30 @@ class EmployeeController extends Controller
     public function uploadEmployeeUsingCSV(Request $request){
         $inputValidation = Validator::make($request->all(), [
             'csv_file' => 'required|file|mimes:csv',
+            'image_zip_folder' => 'sometimes|file|mimes:zip',
         ]);
         if($inputValidation->fails()){
             return response()->json([
                 'status' => false,
-                'message' => 'Please upload file of type CSV',
+                'message' => 'Please select CSV file and zip file of images',
                 'errors' => $inputValidation->errors(),
             ], 422);
         }
+        $zipFolder = $request->file('image_zip_folder');
+        $extractPath = 'uploads/zipFolder/' . time() ;
+        $file = $zipFolder->getClientOriginalName();
+        $filename = pathinfo($file, PATHINFO_FILENAME);
+        $zip = new ZipArchive;
+        if ( $zip->open( $zipFolder->getRealPath() ) === true ) {
+            $zip->extractTo( $extractPath . "/");
+            $zip->close();
+        } else {
+            return response()->json(['message' => 'Failed to extract the zip folder. Try Again.'], 400);
+        }
+        $imgPath = $extractPath . "/" . $filename . "/";
+
         try {
             $added_by = Auth::user()->id;
-            $image = '';
-            $imgFolderPath = $request->image_path;
             $file = $request->file('csv_file');
             $filePath = $file->getRealPath();
             $handle = fopen($filePath, 'r');
@@ -184,7 +199,7 @@ class EmployeeController extends Controller
     
             while (($data = fgetcsv($handle)) !== false) {
                 $lineNumber++;
-    
+                $image = null;
                 if ($lineNumber === 1) {
                     continue;
                 }
@@ -194,33 +209,46 @@ class EmployeeController extends Controller
                 $emp_email = $data[3];
                 $emp_phone = $data[4];
                 $emp_position = $data[5];
-                $emp_doj = $data[6];
-                $emp_image = $data[7];
-    
-                if ($emp_id != "" && $emp_name != "" && $emp_email != "" && $emp_phone != "") {
-                    if ($imgFolderPath != "" && $emp_image != "") {
-                        $imagePath = $imgFolderPath . '/' . $emp_image;
+                $emp_dob = $data[6];
+                $emp_pan = $data[7];
+                $emp_address = $data[8];
+                $city = $data[9];
+                $country = $data[10];
+                $state = $data[11];
+                $emp_doj = $data[12];
+                $linked_in = $data[13];
+                $emp_image = $data[14];
 
-                        if (file_exists($imagePath) && is_readable($imagePath)) {
+                if ($emp_id != "" && $emp_name != "" && $emp_email != "" && $emp_phone != "") {
+                    if ($imgPath != "" && $emp_image != "") {
+                        $imagePath = $imgPath . $emp_image;
+                        if ( file_exists( $imagePath ) && is_readable( $imagePath ) ) {
                             $randomNumber = random_int(100000, 999999);
                             $date = date('YmdHis');
-                            $filename = "IMG_" . $randomNumber . "_" . $date;
+                            $filename = "IMG_" . $randomNumber . "_" . $date ;
                             $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
                             $imageName = $filename . '.' . $extension;
                             $uploadPath = "uploads/users/profile_images/";
                             $image = $uploadPath . $imageName;
-    
-                            Storage::put($image, file_get_contents($imagePath));
+                            rename($imagePath, $image);
                         }
                     }
-    
+                    $emp_dob = $emp_dob != "" && Carbon::parse($emp_dob) ? Carbon::parse($emp_dob)->format('Y-m-d') : null;
+                    $emp_doj = $emp_doj != "" && Carbon::parse($emp_doj) ? Carbon::parse($emp_doj)->format('Y-m-d') : null;
                     $employee = Employee::create([
                         'emp_id' => $emp_id,
                         'emp_name' => $emp_name,
                         'email' => $emp_email,
                         'phone' => $emp_phone,
-                        'position' => $emp_position,
+                        'position' => $emp_position ? $emp_position : null,
+                        'date_of_birth' => $emp_dob,
                         'date_of_joining' => $emp_doj,
+                        'emp_pan' => $emp_pan ? $emp_pan : null,
+                        'permanent_address' => $emp_address ? $emp_address : null,
+                        'city' => $city ? $city : null,
+                        'country' => $country ? $country : null,
+                        'state' => $state ? $state : null,
+                        'linked_in' => $linked_in ? $linked_in : null,
                         'profile_image' => $image,
                         'added_by' => $added_by,
                     ]);
@@ -239,8 +267,8 @@ class EmployeeController extends Controller
             }
     
             DB::commit();
-    
             fclose($handle);
+            File::deleteDirectory($extractPath);
     
             if($successCounter){
                 return response()->json([
@@ -451,9 +479,5 @@ class EmployeeController extends Controller
             'status' => false,
             'message' => "No record found",
         ], 404);
-    }
-
-    public function activeejjjj55(Request $request){
-        
     }
 }

@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('employees', function (Blueprint $table) {
+            $table->string('position')->nullable()->change();
             $table->date('date_of_birth')->nullable();
             $table->string('emp_pan')->nullable();
             $table->longText('permanent_address')->nullable();
@@ -28,6 +29,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('employees', function (Blueprint $table) {
+            $table->dropColumn('position')->nullable(false)->change();
             $table->dropColumn('date_of_birth');
             $table->dropColumn('emp_pan');
             $table->dropColumn('permanent_address');

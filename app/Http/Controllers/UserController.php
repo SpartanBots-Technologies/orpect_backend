@@ -12,6 +12,23 @@ use App\Models\Position;
 
 class UserController extends Controller
 {
+    public function getUser(){
+        $currentUser = User::where('is_deleted', 0)
+                    ->where('id', Auth::user()->id)
+                    ->get();
+        if($currentUser){
+            return response()->json([
+                'status' => true,
+                'user' => $currentUser,
+            ], 200);
+        }else{
+            return response()->json([
+                'status' => false,
+                'message' => "User not found",
+            ], 404);
+        }
+    }
+
     public function updateProfile(Request $request){
         $inputValidation = Validator::make($request->all(), [
             "logoImage" => 'sometimes|file|mimes:jpg,jpeg,png|max:2048',
