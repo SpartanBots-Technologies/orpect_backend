@@ -173,7 +173,7 @@ class EmployeeController extends Controller
             ], 422);
         }
         $zipFolder = $request->file('image_zip_folder');
-        $extractPath = 'uploads/zipFolder/' . time() ;
+        $extractPath = 'uploads/zipFolder/' . date('Ymd') . "_" . time() ;
         $file = $zipFolder->getClientOriginalName();
         $filename = pathinfo($file, PATHINFO_FILENAME);
         $zip = new ZipArchive;
