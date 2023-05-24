@@ -30,6 +30,17 @@ class User extends Authenticatable
         'coupon',
         'terms_and_conditions',
         'is_deleted',
+        'deleted_by',
+        'company_phone',	
+        'webmaster_email',	
+        'company_address',	
+        'company_city',	
+        'company_state',	
+        'company_country',	
+        'company_postal_code',	
+        'registration_number',	
+        'company_social_link',	
+        'is_account_verified',
     ];
 
     /**
