@@ -31,5 +31,6 @@ class Employee extends Model
             'country',
             'state',
             'linked_in',
+            'status_changed_at',
     ];
 }

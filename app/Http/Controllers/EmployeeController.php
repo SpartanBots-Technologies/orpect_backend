@@ -481,4 +481,85 @@ class EmployeeController extends Controller
             'message' => "No record found",
         ], 404);
     }
+
+    public function addReview(Request $request){
+        $inputValidation = Validator::make($request->all(), [
+            "empId" => 'required',
+            "empName" => 'required',
+            "email" => 'required',
+            "phone" => 'required',
+            "position" => 'required',
+            "dateOfJoining" => 'required',
+            'image' => 'required|file|mimes:jpg,jpeg,png|max:2048',
+            'linkedIn' => $request->linkedIn ? 'url' : '',
+            "exEmployee" => 'required',
+            "nonJoiner" => 'required',
+            "rating" => 'required',
+            "review" => 'required',
+            "dateOfLeaving" => $request->dateOfLeaving ? 'date' : '',
+        ]);
+        if($inputValidation->fails()){
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid data entered',
+                'errors' => $inputValidation->errors(),
+            ], 422);
+        }
+        try{
+            $added_by = Auth::user()->id;
+            $image = "";
+
+            if($request->hasFile('image')){
+                $randomNumber = random_int(1000, 9999);
+                $file = $request->image;
+                $date = date('YmdHis');
+                $filename = "IMG_" . $randomNumber . "_" . $date;
+                $extension = strtolower( $file->getClientOriginalExtension() );
+                $imageName = $filename . '.' . $extension;
+                $uploadPath = "uploads/users/profile_images/";
+                $imageUrl = $uploadPath . $imageName;
+                $file->move($uploadPath, $imageName);
+                $image = $imageUrl;
+            }
+
+            $employee = Employee::create([
+                'emp_id' => $request->empId,
+                'emp_name' => $request->empName,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'position' => $request->position,
+                'date_of_joining' => $request->dateOfJoining,
+                'profile_image' => $image,
+                'added_by' => $added_by,
+                'date_of_birth' => $request->dateOfBirth,
+                'emp_pan' => $request->pan_number,
+                'permanent_address' => $request->permanentAddress,
+                'city' => $request->city,
+                'country' => $request->country,
+                'state' => $request->state,
+                'linked_in' => $request->linkedIn,
+                'ex_employee' => $request->exEmployee,
+                'non_joiner' => $request->nonJoiner,
+                'rating' => $request->rating,
+                'review' => $request->review,
+                'date_of_leaving' => $request->dateOfLeaving ?? null,
+                'status_changed_at' => now(),
+            ]);
+            if($employee){
+                return response()->json([
+                    'status' => true,
+                    'message' => "saved successfully",
+                ], 200);
+            }
+            return response()->json([
+                'status' => false,
+                'message' => "some error occured",
+            ], 400);
+        }catch(\Exception $e){
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
 }
