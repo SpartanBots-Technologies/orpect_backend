@@ -118,12 +118,27 @@ class AuthController extends Controller
             "email" => 'required|email|unique:users,email',
             "password" => 'required|min:6|confirmed',
             "otp" => 'required',
+            'companyPhone' => 'required|regex:/^[0-9]{10}$/',
+            "registrationNumber" => 'required',
+            "companySocialLink" => $request->companySocialLink ? 'url' : '',
             "termsNconditions" => 'required',
         ]);
         if($inputValidation->fails()){
             return response()->json([
                 'message' => 'Invalid data entered',
                 'errors' => $inputValidation->errors(),
+            ], 422);
+        }
+        if( User::where('company_phone', $request->companyPhone)->exists() ){
+            return response()->json([
+                "status" => false,
+                'message' => 'Phone number already exists. Please use another number',
+            ], 422);
+        }
+        if( User::where('domain_name', $request->domainName)->exists() ){
+            return response()->json([
+                "status" => false,
+                'message' => 'Domain already Exists',
             ], 422);
         }
         if( EmailVerification::where('email', $request->email)->where('otp', $request->otp)->exists() ){
@@ -146,12 +161,6 @@ class AuthController extends Controller
                 'message' => "Invalid OTP",
             ], 422);
         }
-        if( User::where('domain_name', $request->domainName)->exists() ){
-            return response()->json([
-                "status" => false,
-                'message' => 'Domain already Exists',
-            ], 422);
-        }
 
         $positionArr = ['Developer', 'Designer', 'Tester'];
         $user = User::create([
@@ -162,6 +171,15 @@ class AuthController extends Controller
             "domain_name" => $request->domainName,
             "email" => $request->email,
             "password" => Hash::make($request->password),
+            "company_phone" => $request->companyPhone,
+            "company_address" => $request->companyAddress ?? null,
+            "company_city" => $request->companyCity ?? null,
+            "company_state" => $request->companyState ?? null,
+            "company_country" => $request->companyCountry ?? null,
+            "company_postal_code" => $request->companyPostalCode ?? null,
+            "registration_number" => $request->registrationNumber,
+            "webmaster_email" => $request->companyWebmasterEmail ?? null,
+            "company_social_link" => $request->companySocialLink ?? null,
             "terms_and_conditions" => $request->termsNconditions,
             "email_verified" => 1,
             "role" => 1
