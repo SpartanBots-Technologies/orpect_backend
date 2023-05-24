@@ -19,7 +19,9 @@ return new class extends Migration
             $table->string('city')->nullable();
             $table->string('country')->nullable();
             $table->string('state')->nullable();
+            $table->string('postal_code')->nullable();
             $table->string('linked_in')->nullable();
+            $table->timestamp('status_changed_at')->nullable();
         });
     }
 
@@ -29,14 +31,16 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('employees', function (Blueprint $table) {
-            $table->dropColumn('position')->nullable(false)->change();
+            $table->string('position')->nullable(false)->change();
             $table->dropColumn('date_of_birth');
             $table->dropColumn('emp_pan');
             $table->dropColumn('permanent_address');
             $table->dropColumn('city');
             $table->dropColumn('country');
             $table->dropColumn('state');
+            $table->dropColumn('postal_code');
             $table->dropColumn('linked_in');
+            $table->dropColumn('status_changed_at');
         });
     }
 };
