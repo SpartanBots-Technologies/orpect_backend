@@ -161,6 +161,36 @@ class UserController extends Controller
         ], 200);
     }
 
+    public function updatePosition(Request $request, String $id){
+        $inputValidation = Validator::make($request->all(), [
+            "position" => 'required',
+        ]);
+        if($inputValidation->fails()){
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid data entered',
+            ], 422);
+        }
+        $position = Position::where('id', $id)->first();
+        if($position){
+            $position->update([
+                "position" => $request->position
+            ]);
+            return response()->json([
+                'status' => true,
+                'message' => "Successfully updated",
+            ], 200);
+        
+        }else{
+            return response()->json([
+                'status' => false,
+                'message' => "Unable to update position",
+            ], 400);
+        }
+
+
+    }
+
     public function removePosition(String $id){
         $positionDeleted = Position::where('id', $id)->delete();
         if($positionDeleted){
