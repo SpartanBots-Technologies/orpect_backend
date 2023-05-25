@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\SuperAdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,6 +22,11 @@ use App\Http\Controllers\UserController;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+Route::group(['prefix'=>'admin'],function(){
+    Route::post('/loginAdmin', [SuperAdminController::class, 'loginAdmin']);
+    Route::post('/forgot-password', [SuperAdminController::class, 'forgotPasswordAdmin']);
+    Route::post('/reset-password', [SuperAdminController::class, 'resetPasswordAdmin']);
+});
 
 Route::post('/sendVerificationOtp', [AuthController::class, 'sendEmailVerificationOtp']);
 Route::get('/checkOtp', [AuthController::class, 'checkOtp']);
@@ -32,7 +38,7 @@ Route::post('isTokenValid', [AuthController::class, 'isTokenValid']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logoutUser']);
-
+    
     Route::post('/addEmployee', [EmployeeController::class, 'addEmployee']);
     Route::post('/uploadCSV', [EmployeeController::class, 'uploadEmployeeUsingCSV']);
     Route::get('/getCurrentEmployees', [EmployeeController::class, 'getCurrentEmployees']);
@@ -53,4 +59,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/updatePassword', [UserController::class, 'updateUserPassword']);
     // Route::middleware('auth.admin')->group(function () {
     // });
+    Route::group(['prefix'=>'admin'],function(){
+        Route::post('/addAdmin', [SuperAdminController::class, 'addAdmin']);
+    });
 });
