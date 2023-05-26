@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -215,6 +216,7 @@ class SuperAdminController extends Controller
                 'city' => $request->city,
                 'country' => $request->country,
                 'state' => $request->state,
+                'postal_code' => $request->postalCode,
                 'is_master' => 0,
             ]);
             if($adminCreated){
@@ -232,6 +234,105 @@ class SuperAdminController extends Controller
                 'status' => false,
                 'message' => $e->getMessage(),
             ], 400);
+        }
+    }
+
+    public function updateAdmin(Request $request, String $id){
+        $inputValidation = Validator::make($request->all(), [
+            "fullname" => 'required',
+            "email" => 'required|email',
+            "phone" => 'required|regex:/^[0-9]{10}$/',
+            "address" => 'required',
+            "city" => 'required',
+            "state" => 'required',
+            "country" => 'required',
+            "postalCode" => 'required',
+            'image' => 'sometimes|file|mimes:jpg,jpeg,png|max:2048',
+        ]);
+        if($inputValidation->fails()){
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid data entered',
+                'errors' => $inputValidation->errors(),
+            ], 422);
+        }
+        if( ( $request->email != SuperAdmin::where('id', $id)->value('email') ) && 
+            SuperAdmin::where('email', $request->email)->exists()){
+                return response()->json([
+                    'status' => false, 'message' => 'Email already exists',
+                ], 422);
+        }
+        if( ( $request->phone != SuperAdmin::where('id', $id)->value('phone') ) && 
+            SuperAdmin::where('phone', $request->phone)->exists()){
+                return response()->json([
+                    'status' => false, 'message' => 'phone already exists',
+                ], 422);
+        }
+        try{
+            $adminDetails = SuperAdmin::where('id', $id)->first();
+            $image = null;
+            $oldImage = $request->oldImageName;
+
+            if($request->hasFile('image')){
+                $randomNumber = random_int(1000, 9999);
+                $file = $request->image;
+                $date = date('YmdHis');
+                $filename = "IMG_" . $randomNumber . "_" . $date;
+                $extension = strtolower( $file->getClientOriginalExtension() );
+                $imageName = $filename . '.' . $extension;
+                $uploadPath = "uploads/admins/profile_images/";
+                $imageUrl = $uploadPath . $imageName;
+                $file->move($uploadPath, $imageName);
+                $image = $imageUrl;
+                if($oldImage != "" && File::exists($oldImage)){
+                    File::delete($oldImage);
+                }
+            }else{
+                $image = $oldImage;
+            }
+
+            $adminCreated = $adminDetails->update([
+                'fullname' => $request->fullname,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'image' => $image,
+                'address' => $request->address,
+                'city' => $request->city,
+                'country' => $request->country,
+                'state' => $request->state,
+                'postal_code' => $request->postalCode,
+            ]);
+            if($adminCreated){
+                return response()->json([
+                    'status' => true,
+                    'message' => "updated successfully",
+                ], 200);
+            }
+            return response()->json([
+                'status' => false,
+                'message' => "some error occured",
+            ], 400);
+        }catch(\Exception $e){
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    public function getCompanies(){
+        $allCompanies = User::where('is_deleted', 0)->where('is_account_verified', 0)->paginate(10);
+        if($allCompanies){
+            return response()->json([
+                'status' => true,
+                'allCompanies' => $allCompanies,
+            ], 200);
+        }else{
+            return response()->json([
+                'status' => false,
+                'message' => "No record Found",
+            ], 404);
+
         }
     }
 
