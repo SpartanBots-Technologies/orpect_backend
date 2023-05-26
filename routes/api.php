@@ -62,5 +62,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // });
     Route::group(['prefix'=>'admin'],function(){
         Route::post('/addAdmin', [SuperAdminController::class, 'addAdmin']);
+        Route::post('/updateAdmin/{id}', [SuperAdminController::class, 'updateAdmin']);
+        Route::get('/getCompanies', [SuperAdminController::class, 'getCompanies']);
     });
 });
