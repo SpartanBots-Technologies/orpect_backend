@@ -33,13 +33,13 @@ class SuperAdminController extends Controller
                 'errors' => $inputValidation->errors(),
             ], 422);
         }
-        $userDetail = SuperAdmin::where('email', $request->email)->first();
-        // $userDetail = SuperAdmin::where('email',  $request->email)->where('password', $request->password )->first();
-        if ( $userDetail && Hash::check($request->password, $userDetail->password)) {
-            $token = $userDetail->createToken($userDetail->email.'_api_token')->plainTextToken;
+
+        $admin = SuperAdmin::where('email', $request->email)->first();
+        if ( $admin && Hash::check($request->password, $admin->password)) {
+            $token = $admin->createToken($request->email.'_api_token')->plainTextToken;
             return response()->json([
                 'status' => true,
-                'user' => $userDetail,
+                'user' => $admin,
                 'token' => $token,
             ], 200);
         } else {
@@ -312,6 +312,42 @@ class SuperAdminController extends Controller
                 'status' => false,
                 'message' => "some error occured",
             ], 400);
+        }catch(\Exception $e){
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    public function updateAdminPassword(Request $request){
+        $inputValidation = Validator::make($request->all(), [
+            "oldPassword" => 'required',
+            "newPassword" => 'required|confirmed'
+        ]);
+        if($inputValidation->fails()){
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid data entered',
+                'errors' => $inputValidation->errors(),
+            ], 422);
+        }
+        try{
+            $user = User::select('password')->find( Auth::guard('admin')->user()->id );
+            if( Hash::check($request->oldPassword, $user->password) ){
+                $user->update([
+                    'password' => Hash::make($request->newPassword)
+                ]);
+                return response()->json([
+                    'status' => true,
+                    'message' => "Password updated successfully",
+                ], 200);
+            }else{
+                return response()->json([
+                    'status' => false,
+                    'message' => "Old Password does not match",
+                ], 400);
+            }
         }catch(\Exception $e){
             return response()->json([
                 'status' => false,
