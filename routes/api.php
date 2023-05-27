@@ -64,5 +64,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/addAdmin', [SuperAdminController::class, 'addAdmin']);
         Route::post('/updateAdmin/{id}', [SuperAdminController::class, 'updateAdmin']);
         Route::get('/getCompanies', [SuperAdminController::class, 'getCompanies']);
+        Route::post('/updateAdminPassword', [SuperAdminController::class, 'updateAdminPassword']);
     });
 });
