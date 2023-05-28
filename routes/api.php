@@ -23,9 +23,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 Route::group(['prefix'=>'admin'],function(){
-    Route::post('/loginAdmin', [SuperAdminController::class, 'loginAdmin']);
-    Route::post('/forgot-password', [SuperAdminController::class, 'forgotPasswordAdmin']);
-    Route::post('/reset-password', [SuperAdminController::class, 'resetPasswordAdmin']);
+    Route::post('/loginAdmin', [AuthController::class, 'loginAdmin']);
+    Route::post('/forgot-password', [AuthController::class, 'forgotPasswordAdmin']);
+    Route::post('/reset-password', [AuthController::class, 'resetPasswordAdmin']);
 });
 
 Route::post('/sendVerificationOtp', [AuthController::class, 'sendEmailVerificationOtp']);
@@ -61,6 +61,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route::middleware('auth.admin')->group(function () {
     // });
     Route::group(['prefix'=>'admin'],function(){
+        Route::post('/logoutAdmin', [AuthController::class, 'logoutAdmin']);
         Route::post('/addAdmin', [SuperAdminController::class, 'addAdmin']);
         Route::post('/updateAdmin/{id}', [SuperAdminController::class, 'updateAdmin']);
         Route::get('/getCompanies', [SuperAdminController::class, 'getCompanies']);
