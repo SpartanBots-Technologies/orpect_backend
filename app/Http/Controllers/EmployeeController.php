@@ -465,8 +465,11 @@ class EmployeeController extends Controller
                             ->orWhere('phone', 'like', '%' . $searchText . '%');
                     })
                     ->where(function ($query) {
-                        $query->where('ex_employee', 1)
-                            ->orWhere('non_joiner', 1);
+                        $query->where('added_by', Auth::user()->id)
+                            ->orWhere(function ($query) {
+                                $query->where('ex_employee', 1)
+                                    ->orWhere('non_joiner', 1);
+                            });
                     })
                     ->paginate(10);
 
