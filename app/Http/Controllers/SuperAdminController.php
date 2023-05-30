@@ -208,6 +208,21 @@ class SuperAdminController extends Controller
         }
     }
 
+    public function getAllAdmins(){
+        $allCompanies = SuperAdmin::where('is_deleted', 0)->where('is_master', 0)->paginate(10);
+        if($allCompanies){
+            return response()->json([
+                'status' => true,
+                'allCompanies' => $allCompanies,
+            ], 200);
+        }else{
+            return response()->json([
+                'status' => false,
+                'message' => "No record Found",
+            ], 404);
+        }
+    }
+
     public function getCompanies(){
         $allCompanies = User::where('is_deleted', 0)->where('is_account_verified', 0)->paginate(10);
         if($allCompanies){
