@@ -458,20 +458,37 @@ class EmployeeController extends Controller
 
     public function searchEmployeeGlobally(Request $request){
         $searchText = $request->searchText;
-        $employees = Employee::where(function ($query) use ($searchText) {
+        $exEmp = $request->input('exEmp', 0);
+        $nonJEmp = $request->input('nonJoinerEmp', 0);
+        $currentEmp = $request->input('currentEmp', 0);
+        $employeesQuery = Employee::where('is_deleted', 0)
+                    ->where(function ($query) use ($searchText) {
                         $query->where('emp_name', 'like', '%' . $searchText . '%')
                             ->orWhere('email', 'like', '%' . $searchText . '%')
                             ->orWhere('emp_pan', 'like', '%' . $searchText . '%')
                             ->orWhere('phone', 'like', '%' . $searchText . '%');
-                    })
-                    ->where(function ($query) {
-                        $query->where('added_by', Auth::user()->id)
-                            ->orWhere(function ($query) {
-                                $query->where('ex_employee', 1)
-                                    ->orWhere('non_joiner', 1);
-                            });
-                    })
-                    ->paginate(10);
+                    });
+
+                    if ($currentEmp == 1) {
+                        $employeesQuery->where('added_by', Auth::user()->id)
+                            ->where('ex_employee', 0)
+                            ->where('non_joiner', 0);
+                    } elseif ($exEmp == 1) {
+                        $employeesQuery->where('ex_employee', 1)
+                            ->where('non_joiner', 0);
+                    } elseif ($nonJEmp == 1) {
+                        $employeesQuery->where('ex_employee', 0)
+                            ->where('non_joiner', 1);
+                    } else{
+                        $employeesQuery->where(function ($query) {
+                            $query->where('added_by', Auth::user()->id)
+                                ->orWhere(function ($query) {
+                                    $query->where('ex_employee', 1)
+                                        ->orWhere('non_joiner', 1);
+                                });
+                        });
+                    }
+        $employees = $employeesQuery->paginate(10);
 
         if($employees){
             return response()->json([
