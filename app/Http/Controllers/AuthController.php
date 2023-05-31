@@ -296,23 +296,24 @@ class AuthController extends Controller
     }
 
     public function resetPassword(Request $request){
-        // $resetData = PasswordReset::where('token', $request->token)->get();
+
+        $inputValidation = Validator::make($request->all(), [
+            "password" => 'required|confirmed',
+            "token" => 'required'
+        ]);
+        if($inputValidation->fails()){
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid data',
+                'errors' => $inputValidation->errors(),
+            ], 422);
+        }
         try{
             $email = DB::table('password_reset_tokens')
                     ->select('email')
                     ->where('token', $request->token)
                     ->value('email');
-            if(isset($request->token) && $email){
-                $inputValidation = Validator::make($request->all(), [
-                    "password" => 'required|confirmed'
-                ]);
-                if($inputValidation->fails()){
-                    return response()->json([
-                        'status' => false,
-                        'message' => 'Password does not match',
-                        'errors' => $inputValidation->errors(),
-                    ], 422);
-                }
+            if( $email ){
 
                 $user = User::where('email',$email)->first();
                 $user->fill([
@@ -482,24 +483,6 @@ class AuthController extends Controller
         }
 
         try{
-            $tokenExists = PasswordReset::select('created_at')->where('token', $request->token)->first();
-            if($tokenExists){
-                $to = Carbon::createFromFormat('Y-m-d H:i:s', $tokenExists->created_at);
-                $from = Carbon::createFromFormat('Y-m-d H:i:s', now());
-                $diff_in_minutes = $to->diffInMinutes($from);
-                if($diff_in_minutes > 10 ){
-                    PasswordReset::where('token', $request->token)->delete();
-                    return response()->json([
-                        'status' => false,
-                        'message' => 'Token Expired',
-                    ], 400);
-                }
-            }else{
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Token not found',
-                ], 404);
-            }
             $email = DB::table('password_reset_tokens')
                     ->select('email')
                     ->where('token', $request->token)
