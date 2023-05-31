@@ -46,6 +46,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/getExEmployees', [EmployeeController::class, 'getExEmployees']);
     Route::get('/getNonJoiners', [EmployeeController::class, 'getNonJoiners']);
     Route::post('/updateEmployee/{id}', [EmployeeController::class, 'updateEmployee']);
+    Route::post('/updateEmployeeImage/{id}', [EmployeeController::class, 'updateEmployeeImage']);
     Route::delete('/deleteEmployee/{id}', [EmployeeController::class, 'deleteEmployee']);
     Route::post('/addReview', [EmployeeController::class, 'addReview']);
     Route::post('/rateAndReview/{id}', [EmployeeController::class, 'rateAndReview']);
