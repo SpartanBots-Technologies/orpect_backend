@@ -93,7 +93,6 @@ class EmployeeController extends Controller
             "phone" => 'required',
             "position" => 'required',
             "dateOfJoining" => 'required',
-            'image' => 'sometimes|file|mimes:jpg,jpeg,png|max:2048',
             'linkedIn' => 'sometimes|url',
         ]);
         if($inputValidation->fails()){
@@ -105,7 +104,54 @@ class EmployeeController extends Controller
         }
         try{
             $employeeDetails = employee::find($id);
-            $image = "";
+
+            $employee = $employeeDetails->update([
+                'emp_id' => $request->empId,
+                'emp_name' => $request->empName,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'position' => $request->position,
+                'date_of_joining' => $request->dateOfJoining,
+                'date_of_birth' => $request->dateOfBirth,
+                'emp_pan' => $request->pan_number,
+                'permanent_address' => $request->permanentAddress,
+                'city' => $request->city,
+                'country' => $request->country,
+                'state' => $request->state,
+                'linked_in' => $request->linkedIn,
+            ]);
+            if($employee){
+                return response()->json([
+                    'status' => true,
+                    'message' => "updated successfully",
+                ], 200);
+            }
+            return response()->json([
+                'status' => false,
+                'message' => "some error occured",
+            ], 400);
+        }catch(\Exception $e){
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    public function updateEmployeeImage(Request $request, string $id){
+        $inputValidation = Validator::make($request->all(), [
+            'image' => 'sometimes|file|mimes:jpg,jpeg,png|max:2048',
+        ]);
+        if($inputValidation->fails()){
+            return response()->json([
+                'status' => false,
+                'message' => 'Please select a file of type jpg, jpeg or png. Max size 2MB',
+                'errors' => $inputValidation->errors(),
+            ], 422);
+        }
+        try{
+            $employeeDetails = employee::find($id);
+            $image = null;
             $oldImage = $request->oldImageName;
 
             if($request->hasFile('image')){
@@ -127,25 +173,12 @@ class EmployeeController extends Controller
             }
 
             $employee = $employeeDetails->update([
-                'emp_id' => $request->empId,
-                'emp_name' => $request->empName,
-                'email' => $request->email,
-                'phone' => $request->phone,
-                'position' => $request->position,
-                'date_of_joining' => $request->dateOfJoining,
                 'profile_image' => $image,
-                'date_of_birth' => $request->dateOfBirth,
-                'emp_pan' => $request->pan_number,
-                'permanent_address' => $request->permanentAddress,
-                'city' => $request->city,
-                'country' => $request->country,
-                'state' => $request->state,
-                'linked_in' => $request->linkedIn,
             ]);
             if($employee){
                 return response()->json([
                     'status' => true,
-                    'message' => "updated successfully",
+                    'message' => "Profile image updated successfully",
                 ], 200);
             }
             return response()->json([
