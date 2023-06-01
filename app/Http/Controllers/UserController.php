@@ -31,15 +31,56 @@ class UserController extends Controller
 
     public function updateProfile(Request $request){
         $inputValidation = Validator::make($request->all(), [
-            "logoImage" => 'sometimes|file|mimes:jpg,jpeg,png|max:2048',
             "companyName" => 'required',
             "companyType" => 'required',
             "fullName" => 'required',
             "designation" => 'required',
+            "companyPhone" => 'required|regex:/^[0-9]{10}$/',
+            "registrationNumber" => 'required',
+            "companySocialLink" => $request->companySocialLink ? 'url' : '',
         ]);
         if($inputValidation->fails()){
             return response()->json([
                 'message' => 'Invalid data entered',
+                'errors' => $inputValidation->errors(),
+            ], 422);
+        }
+        $user = User::find(Auth::user()->id);
+        $userUpdated = $user->update([
+            "company_name" => $request->companyName,
+            "company_type" => $request->companyType,
+            "full_name" => $request->fullName,
+            "designation" => $request->designation,
+            "company_phone" => $request->companyPhone,
+            "company_address" => $request->companyAddress ?? null,
+            "company_city" => $request->companyCity ?? null,
+            "company_state" => $request->companyState ?? null,
+            "company_country" => $request->companyCountry ?? null,
+            "company_postal_code" => $request->companyPostalCode ?? null,
+            "registration_number" => $request->registrationNumber,
+            "webmaster_email" => $request->companyWebmasterEmail ?? null,
+            "company_social_link" => $request->companySocialLink ?? null,
+        ]);
+        if( $userUpdated ){
+            $updatedUser = User::find($user->id);
+            return response()->json([
+                'status' => true,
+                'message' => "User successfully updated",
+                'user' => $updatedUser,
+            ], 200);
+        }
+        return response()->json([
+            'message' => 'Some error occured',
+        ], 401);
+    }
+
+    public function updateUserImage(Request $request){
+        $inputValidation = Validator::make($request->all(), [
+            "logoImage" => 'required|file|mimes:jpg,jpeg,png|max:2048'
+        ]);
+        if($inputValidation->fails()){
+            return response()->json([
+                'message' => 'Invalid image. Upload image of mime type jpg, jpeg & png',
                 'errors' => $inputValidation->errors(),
             ], 422);
         }
@@ -65,17 +106,13 @@ class UserController extends Controller
         }
         $userUpdated = $user->update([
             "image" => $image,
-            "company_name" => $request->companyName,
-            "company_type" => $request->companyType,
-            "full_name" => $request->fullName,
-            "designation" => $request->designation,
         ]);
         if( $userUpdated ){
-            $updatedUser = User::find($user->id);
+            $newImageName = User::find($user->id)->value('image');
             return response()->json([
                 'status' => true,
-                'message' => "User successfully updated",
-                'user' => $updatedUser,
+                'message' => "Image updated successfully",
+                'newImage' => $newImageName,
             ], 200);
         }
         return response()->json([
@@ -132,15 +169,25 @@ class UserController extends Controller
         }
         try {
             $positions = explode(",", $request->positions);
+            $count = 0 ;
+            $positionAlreadyExist = [];
             foreach($positions as $position) {
-                if( !Position::where('position', $position)->where('added_by', Auth::user()->id)->exists() ){
+                if( !Position::where('position', trim($position))->where('added_by', Auth::user()->id)->exists() ){
                     Position::create([
                         "position" => trim($position),
                         "added_by" => Auth::user()->id,
                     ]);
+                    $count++;
+                }else{
+                    $positionAlreadyExist[] = $position;
                 }
             }
-
+            if( count($positionAlreadyExist) ){
+                return response()->json([
+                    'status' => true,
+                    'message' => $count . ($count == 1 ? " Position" : " Positions") . " saved. '" . implode(",", $positionAlreadyExist).  "' already exists.",
+                ], 200);    
+            }
             return response()->json([
                 'status' => true,
                 'message' => "Successfully added",
@@ -148,7 +195,7 @@ class UserController extends Controller
         }catch(\Exception $e){
             return response()->json([
                 'status' => false,
-                'message' => $e,
+                'message' => "Unable to add position. Please try again.",
             ], 400);
         }
     }
@@ -175,13 +222,20 @@ class UserController extends Controller
         }
         $position = Position::where('id', $id)->first();
         if($position){
-            $position->update([
-                "position" => $request->position
-            ]);
-            return response()->json([
-                'status' => true,
-                'message' => "Successfully updated",
-            ], 200);
+            if( !Position::where('position', trim($request->position))->where('added_by', Auth::user()->id)->exists() ){
+                $position->update([
+                    "position" => trim($request->position)
+                ]);
+                return response()->json([
+                    'status' => true,
+                    'message' => "Successfully updated",
+                ], 200);
+            }else{
+                return response()->json([
+                    'status' => false,
+                    'message' => "Position already exists",
+                ], 400);
+            }
         
         }else{
             return response()->json([
