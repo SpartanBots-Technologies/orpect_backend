@@ -133,10 +133,12 @@ class UserController extends Controller
         try {
             $positions = explode(",", $request->positions);
             foreach($positions as $position) {
-                Position::create([
-                    "position" => trim($position),
-                    "added_by" => Auth::user()->id,
-                ]);
+                if( !Position::where('position', $position)->where('added_by', Auth::user()->id)->exists() ){
+                    Position::create([
+                        "position" => trim($position),
+                        "added_by" => Auth::user()->id,
+                    ]);
+                }
             }
 
             return response()->json([
