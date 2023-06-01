@@ -24,7 +24,8 @@ class EmployeeController extends Controller
             "position" => 'required',
             "dateOfJoining" => 'required',
             'image' => 'required|file|mimes:jpg,jpeg,png|max:2048',
-            'linkedIn' => 'sometimes|url',
+            'pan_number' => 'required',
+            'linkedIn' => $request->linkedIn ? 'url' : '',
         ]);
         if($inputValidation->fails()){
             return response()->json([
@@ -59,13 +60,13 @@ class EmployeeController extends Controller
                 'date_of_joining' => $request->dateOfJoining,
                 'profile_image' => $image,
                 'added_by' => $added_by,
-                'date_of_birth' => $request->dateOfBirth,
+                'date_of_birth' => $request->dateOfBirth ?? null,
                 'emp_pan' => $request->pan_number,
-                'permanent_address' => $request->permanentAddress,
-                'city' => $request->city,
-                'country' => $request->country,
-                'state' => $request->state,
-                'linked_in' => $request->linkedIn,
+                'permanent_address' => $request->permanentAddress ?? null,
+                'city' => $request->city ?? null,
+                'country' => $request->country ?? null,
+                'state' => $request->state ?? null,
+                'linked_in' => $request->linkedIn ?? null,
             ]);
             if($employee){
                 return response()->json([
@@ -93,7 +94,8 @@ class EmployeeController extends Controller
             "phone" => 'required',
             "position" => 'required',
             "dateOfJoining" => 'required',
-            'linkedIn' => 'sometimes|url',
+            'pan_number' => 'required',
+            'linkedIn' => $request->linkedIn ? 'url' : '',
         ]);
         if($inputValidation->fails()){
             return response()->json([
@@ -112,13 +114,13 @@ class EmployeeController extends Controller
                 'phone' => $request->phone,
                 'position' => $request->position,
                 'date_of_joining' => $request->dateOfJoining,
-                'date_of_birth' => $request->dateOfBirth,
+                'date_of_birth' => $request->dateOfBirth ?? null,
                 'emp_pan' => $request->pan_number,
-                'permanent_address' => $request->permanentAddress,
-                'city' => $request->city,
-                'country' => $request->country,
-                'state' => $request->state,
-                'linked_in' => $request->linkedIn,
+                'permanent_address' => $request->permanentAddress ?? null,
+                'city' => $request->city ?? null,
+                'country' => $request->country ?? null,
+                'state' => $request->state ?? null,
+                'linked_in' => $request->linkedIn ?? null,
             ]);
             if($employee){
                 return response()->json([
@@ -326,8 +328,8 @@ class EmployeeController extends Controller
     public function getCurrentEmployees(Request $request){
         $searchValue = $request->input('searchText', '');
         $position = $request->input('position', '');
-
-        $query = Employee::where('added_by', '=', Auth::user()->id)
+        $id = $request->id ? $request->id : Auth::user()->id;
+        $query = Employee::where('added_by', '=', $id)
             ->where('ex_employee', '=', 0)
             ->where('non_joiner', '=', 0)
             ->where('is_deleted', '=', 0);
@@ -392,7 +394,8 @@ class EmployeeController extends Controller
     public function getExEmployees(Request $request){
         $searchValue = $request->input('searchText', '');
         $position = $request->input('position', '');
-        $query = Employee::where('added_by', '=', Auth::user()->id)
+        $id = $request->id ? $request->id : Auth::user()->id;
+        $query = Employee::where('added_by', '=', $id)
                     ->where('ex_employee', '=', 1)
                     ->where('non_joiner', '=', 0)
                     ->where('is_deleted', '=', 0);
@@ -421,7 +424,8 @@ class EmployeeController extends Controller
     public function getNonJoiners(Request $request){
         $searchValue = $request->input('searchText', '');
         $position = $request->input('position', '');
-        $query = Employee::where('added_by', '=', Auth::user()->id)
+        $id = $request->id ? $request->id : Auth::user()->id;
+        $query = Employee::where('added_by', '=', $id)
                     ->where('non_joiner', '=', 1)
                     ->where('ex_employee', '=', 0)
                     ->where('is_deleted', '=', 0);
