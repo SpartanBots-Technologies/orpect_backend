@@ -76,7 +76,7 @@ class UserController extends Controller
 
     public function updateUserImage(Request $request){
         $inputValidation = Validator::make($request->all(), [
-            "logoImage" => 'required|file|mimes:jpg,jpeg,png|max:2048'
+            "logoImage" => 'required|file|mimes:jpg,jpeg,png'
         ]);
         if($inputValidation->fails()){
             return response()->json([
