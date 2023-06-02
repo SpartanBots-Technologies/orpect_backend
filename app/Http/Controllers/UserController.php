@@ -108,11 +108,10 @@ class UserController extends Controller
             "image" => $image,
         ]);
         if( $userUpdated ){
-            $newImageName = User::find($user->id)->value('image');
             return response()->json([
                 'status' => true,
                 'message' => "Image updated successfully",
-                'newImage' => $newImageName,
+                'newImage' => $image,
             ], 200);
         }
         return response()->json([
