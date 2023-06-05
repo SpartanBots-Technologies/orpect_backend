@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\File;
 use App\Models\User;
 use App\Models\Position;
+use App\Models\Employee;
 
 class UserController extends Controller
 {
@@ -258,6 +259,51 @@ class UserController extends Controller
                 'status' => false,
                 'message' => "Some error occured",
             ], 400);
+        }
+    }
+
+    public function getCompanies(){
+        $allCompanies = User::where('is_deleted', 0)->where('is_account_verified', 0)->paginate(10);
+        if($allCompanies){
+            return response()->json([
+                'status' => true,
+                'allCompanies' => $allCompanies,
+            ], 200);
+        }else{
+            return response()->json([ 'status' => false, 'message' => "No record Found", ], 404);
+        }
+    }
+
+    public function getCompanyById(String $id){
+        $company = User::where('id', $id)
+                    ->where('is_deleted', 0)
+                    ->first();
+        if($company){
+            return response()->json([
+                'status' => true,
+                'company' => $company,
+            ], 200);
+        }else{
+            return response()->json([ 'status' => false, 'message' => "Company not found", ], 404);
+        }
+    }
+
+    public function deleteCompany(String $id){
+        $companydetails = User::find($id);
+        if($companydetails){
+            try{
+                Employee::where('added_by', $id)->update([
+                    'is_deleted' => 1,
+                ]);
+                $companydetails->update([
+                    "is_deleted" => 1,
+                ]);
+                return response()->json([ 'status' => true, 'message' => "successfully deleted", ], 200);
+            }catch(\Exception $e){
+                dd($e);
+            }
+        }else{
+            return response()->json([ 'status' => false, 'message' => "Some error occured", ], 400);
         }
     }
 }
