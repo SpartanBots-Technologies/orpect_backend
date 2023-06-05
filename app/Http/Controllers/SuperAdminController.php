@@ -4,17 +4,9 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
-use Session;
 
 use App\Models\User;
-use App\Models\PasswordReset;
-use App\Models\EmailVerification;
-use App\Models\Position;
 use App\Models\SuperAdmin;
 
 use Illuminate\Http\Request;
@@ -220,22 +212,6 @@ class SuperAdminController extends Controller
                 'status' => false,
                 'message' => "No record Found",
             ], 404);
-        }
-    }
-
-    public function getCompanies(){
-        $allCompanies = User::where('is_deleted', 0)->where('is_account_verified', 0)->paginate(10);
-        if($allCompanies){
-            return response()->json([
-                'status' => true,
-                'allCompanies' => $allCompanies,
-            ], 200);
-        }else{
-            return response()->json([
-                'status' => false,
-                'message' => "No record Found",
-            ], 404);
-
         }
     }
 
