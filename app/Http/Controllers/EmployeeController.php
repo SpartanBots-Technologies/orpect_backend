@@ -495,9 +495,7 @@ class EmployeeController extends Controller
 
     public function searchEmployeeGlobally(Request $request){
         $searchText = $request->searchText;
-        $exEmp = $request->input('exEmp', 0);
-        $nonJEmp = $request->input('nonJoinerEmp', 0);
-        $currentEmp = $request->input('currentEmp', 0);
+        $emp = $request->input('emp', '');
         $employeesQuery = Employee::where('is_deleted', 0)
                     ->where(function ($query) use ($searchText) {
                         $query->where('emp_name', 'like', '%' . $searchText . '%')
@@ -506,14 +504,14 @@ class EmployeeController extends Controller
                             ->orWhere('phone', 'like', '%' . $searchText . '%');
                     });
 
-                    if ($currentEmp == 1) {
+                    if ( $emp != '' && $emp == 'current' ) {
                         $employeesQuery->where('added_by', Auth::user()->id)
                             ->where('ex_employee', 0)
                             ->where('non_joiner', 0);
-                    } elseif ($exEmp == 1) {
+                    } elseif ( $emp != '' && $emp == 'ex' ) {
                         $employeesQuery->where('ex_employee', 1)
                             ->where('non_joiner', 0);
-                    } elseif ($nonJEmp == 1) {
+                    } elseif ( $emp != '' && $emp == 'nonJoiner' ) {
                         $employeesQuery->where('ex_employee', 0)
                             ->where('non_joiner', 1);
                     } else{
@@ -618,5 +616,34 @@ class EmployeeController extends Controller
                 'message' => $e->getMessage(),
             ], 400);
         }
+    }
+
+    public function getTotalEmployees(String $id){
+        $query = Employee::select('id', 'ex_employee', 'non_joiner')
+                ->where('added_by', $id)
+                ->where('is_deleted', 0)
+                ->get();
+
+        if( count ($query) > 0 ) {
+            $currentEmp = $query->where('ex_employee', 0)
+                    ->where('non_joiner', 0);
+            $exEmp = $query->where('ex_employee', 1)
+                    ->where('non_joiner', 0);
+            $nonJoiner = $query->where('ex_employee', 0)
+                    ->where('non_joiner', 1);
+
+            return response()->json([
+                'status' => true,
+                'totalCurrentEmp' => count( $currentEmp ),
+                'totalExEmp' => count( $exEmp ),
+                'totalNonJoiner' => count( $nonJoiner ),
+                'totalSubReview' => count( $exEmp ) + count( $nonJoiner ),
+            ], 200);
+        }
+
+        return response()->json([
+            'status' => false,
+            'message' => "No record found",
+        ], 400);
     }
 }
