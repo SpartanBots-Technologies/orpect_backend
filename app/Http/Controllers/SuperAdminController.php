@@ -201,11 +201,39 @@ class SuperAdminController extends Controller
     }
 
     public function getAllAdmins(){
-        $allCompanies = SuperAdmin::where('is_deleted', 0)->where('is_master', 0)->paginate(10);
-        if($allCompanies){
+        $allAdmins = SuperAdmin::where('is_deleted', 0)->where('is_master', 0)->paginate(10);
+        if($allAdmins){
             return response()->json([
                 'status' => true,
-                'allCompanies' => $allCompanies,
+                'allAdmins' => $allAdmins,
+            ], 200);
+        }else{
+            return response()->json([
+                'status' => false,
+                'message' => "No record Found",
+            ], 404);
+        }
+    }
+
+    public function getAdminById(String $id){
+        $admin = SuperAdmin::select('id',
+                                    'fullname',
+                                    'phone',
+                                    'email',
+                                    'image',
+                                    'address',
+                                    'city',
+                                    'state',
+                                    'country',
+                                    'postal_code',
+                                    )
+                ->where('id', $id)
+                ->where('is_deleted', 0)
+                ->first();
+        if($admin){
+            return response()->json([
+                'status' => true,
+                'admin' => $admin,
             ], 200);
         }else{
             return response()->json([
