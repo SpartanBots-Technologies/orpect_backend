@@ -201,7 +201,22 @@ class SuperAdminController extends Controller
     }
 
     public function getAllAdmins(){
-        $allAdmins = SuperAdmin::where('is_deleted', 0)->where('is_master', 0)->paginate(10);
+        $allAdmins = SuperAdmin::select(
+                                    'id',
+                                    'fullname',
+                                    'phone',
+                                    'email',
+                                    'image',
+                                    'address',
+                                    'city',
+                                    'state',
+                                    'country',
+                                    'postal_code',
+                                )
+                    ->where('is_deleted', 0)
+                    ->where('is_master', 0)
+                    ->orderBy('created_at', 'desc')
+                    ->paginate(10);
         if($allAdmins){
             return response()->json([
                 'status' => true,
