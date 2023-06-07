@@ -30,6 +30,7 @@ Route::group(['prefix'=>'admin'],function(){
 
 Route::post('/sendVerificationOtp', [AuthController::class, 'sendEmailVerificationOtp']);
 Route::get('/checkOtp', [AuthController::class, 'checkOtp']);
+Route::get('/checkDomain', [AuthController::class, 'checkDomain']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('forgot-password', [AuthController::class, 'forgotpassword']);
