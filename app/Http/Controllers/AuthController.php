@@ -20,21 +20,37 @@ use App\Models\SuperAdmin;
 class AuthController extends Controller
 {
     public function sendEmailVerificationOtp(Request $request){
-        // dd($request->all());
         $inputValidation = Validator::make($request->all(), [
             "email" => 'required|email|unique:users,email',
         ]);
         if($inputValidation->fails()){
             return response()->json([
                 'status' => false,
-                'message' => 'Email not found',
+                'message' => 'Please enter a valid email',
                 'errors' => $inputValidation->errors(),
             ], 422);
         }
+        $badDomains = [
+            "gmail.com",
+            "yopmail.com",
+            "yahoo.com",
+            "robot-mail.com",
+            "maildrop.cc",
+            "dispostable.com",
+            "mailinator.com",
+            "guerrillamail.com",
+        ];
+        
+        $domain = substr(strrchr($request->email, "@"), 1); // Extract the domain from the email
 
+        if (in_array($domain, $badDomains)) {
+            return response()->json([
+                'status' => false,
+                'messsage' => "Please enter company email",
+            ], 422);
+        }
         $randOtp = random_int(100000, 999999);
         $useremail = $request->email;
-        // $domain =  config('services.react.domain');
 
         $data = [
             'userName' => $useremail,
@@ -49,10 +65,6 @@ class AuthController extends Controller
                 "otp" => $randOtp
             ]
         );
-        // EmailVerification::create([
-        //     "email" => $request->email,
-        //     "otp" => $randOtp,
-        // ]);
 
         if( 
             Mail::send('auth.OtpEmail', ['data' => $data], function ($message) use ($useremail){
@@ -108,6 +120,39 @@ class AuthController extends Controller
         }
     }
 
+    public function checkDomain(Request $request){
+        if($request->domain != "" && !User::where('domain_name', $request->domain)->exists() ){
+            $badDomains = [
+                            "gmail.com",
+                            "yopmail.com",
+                            "yahoo.com",
+                            "robot-mail.com",
+                            "maildrop.cc",
+                            "dispostable.com",
+                            "mailinator.com",
+                            "guerrillamail.com",
+                        ];
+
+            if (!in_array($request->domain, $badDomains)) {
+                return response()->json([
+                    "status" => true,
+                    'message' => 'Correct Domain',
+                ], 200);
+            } else {
+                return response()->json([
+                    "status" => false,
+                    'message' => 'Please enter your company domain name',
+                ], 422);
+            }
+        }
+        else{
+            return response()->json([
+                'status' => false,
+                'message' => 'Domain already exists',
+            ], 422);
+        }
+    }
+
     public function register(Request $request){
 
         $inputValidation = Validator::make($request->all(), [
@@ -159,10 +204,9 @@ class AuthController extends Controller
         }else{
             return response()->json([
                 'status' => false,
-                'message' => "Invalid OTP",
+                'message' => "OTP expired",
             ], 422);
         }
-
         $positionArr = ['Developer', 'Designer', 'Tester'];
         $user = User::create([
             "company_name" => $request->companyName,
