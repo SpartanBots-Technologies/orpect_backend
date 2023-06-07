@@ -36,6 +36,8 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('forgot-password', [AuthController::class, 'forgotpassword']);
 Route::post('reset-password', [AuthController::class, 'resetPassword']);
 Route::post('isTokenValid', [AuthController::class, 'isTokenValid']);
+Route::get('getDesignations', [SuperAdminController::class, 'getDesignations']);
+Route::get('getCompanyTypes', [SuperAdminController::class, 'getCompanyTypes']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logoutUser']);

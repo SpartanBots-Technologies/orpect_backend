@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\DB;
 
 use App\Models\User;
 use App\Models\SuperAdmin;
@@ -254,6 +255,36 @@ class SuperAdminController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => "No record Found",
+            ], 404);
+        }
+    }
+
+    public function getDesignations(){
+        $designations = DB::table('designations')->select('id', 'designation')->get();
+        if($designations){
+            return response()->json([
+                'status' => true,
+                'designations' => $designations,
+            ], 200);
+        }else{
+            return response()->json([
+                'status' => false,
+                'message' => "No designation Found",
+            ], 404);
+        }
+    }
+
+    public function getCompanyTypes(){
+        $companyTypes = DB::table('company_types')->select('id', 'type')->get();
+        if($companyTypes){
+            return response()->json([
+                'status' => true,
+                'companyTypes' => $companyTypes,
+            ], 200);
+        }else{
+            return response()->json([
+                'status' => false,
+                'message' => "No type Found",
             ], 404);
         }
     }
