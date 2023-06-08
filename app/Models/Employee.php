@@ -20,7 +20,6 @@ class Employee extends Model
             'ex_employee',
             'non_joiner',
             'date_of_leaving',
-            'rating',
             'review',
             'added_by',
             'is_deleted',
@@ -32,5 +31,10 @@ class Employee extends Model
             'state',
             'linked_in',
             'status_changed_at',
+            'overall_rating',
+            'performance_rating',
+            'professional_skills_rating',
+            'teamwork_communication_rating',
+            'attitude_behaviour_rating',
     ];
 }
