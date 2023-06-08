@@ -204,7 +204,7 @@ class AuthController extends Controller
         }else{
             return response()->json([
                 'status' => false,
-                'message' => "OTP expired",
+                'message' => "Invalid OTP",
             ], 422);
         }
         $positionArr = ['Developer', 'Designer', 'Tester'];
