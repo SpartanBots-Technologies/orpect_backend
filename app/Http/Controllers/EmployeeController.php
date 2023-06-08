@@ -454,7 +454,10 @@ class EmployeeController extends Controller
         $inputValidation = Validator::make($request->all(), [
             "exEmployee" => 'required',
             "nonJoiner" => 'required',
-            "rating" => 'required',
+            "performanceRating" => 'required',
+            "professionalSkillsRating" => 'required',
+            "teamworkCommunicationRating" => 'required',
+            "attitudeBehaviourRating" => 'required',
             "review" => 'required',
             "dateOfLeaving" => 'required',
         ]);
@@ -467,11 +470,16 @@ class EmployeeController extends Controller
         }
         try{
             $employeeDetails = employee::find($id);
-
+            $rating = ( $request->performanceRating + $request->professionalSkillsRating 
+                    + $request->teamworkCommunicationRating + $request->attitudeBehaviourRating ) / 4;
             $employee = $employeeDetails->update([
                 'ex_employee' => $request->exEmployee,
                 'non_joiner' => $request->nonJoiner,
-                'rating' => $request->rating,
+                'performance_rating' => $request->performanceRating ?? 0,
+                'professional_skills_rating' => $request->professionalSkillsRating ?? 0,
+                'teamwork_communication_rating' => $request->teamworkCommunicationRating ?? 0,
+                'attitude_behaviour_rating' => $request->attitudeBehaviourRating ?? 0,
+                'overall_rating' => $rating,
                 'review' => $request->review,
                 'date_of_leaving' => $request->dateOfLeaving,
             ]);
@@ -539,17 +547,15 @@ class EmployeeController extends Controller
 
     public function addReview(Request $request){
         $inputValidation = Validator::make($request->all(), [
-            "empId" => 'required',
             "empName" => 'required',
             "email" => 'required',
             "phone" => 'required',
             "position" => 'required',
             "dateOfJoining" => $request->dateOfJoining ? 'date' : '',
-            'image' => 'required|file|mimes:jpg,jpeg,png|max:2048',
+            'image' => $request->image ? 'file|mimes:jpg,jpeg,png|max:2048' : '',
             'linkedIn' => $request->linkedIn ? 'url' : '',
             "exEmployee" => 'required',
             "nonJoiner" => 'required',
-            "rating" => 'required',
             "review" => 'required',
             "dateOfLeaving" => $request->dateOfLeaving ? 'date' : '',
         ]);
@@ -562,7 +568,7 @@ class EmployeeController extends Controller
         }
         try{
             $added_by = Auth::user()->id;
-            $image = "";
+            $image = null;
 
             if($request->hasFile('image')){
                 $randomNumber = random_int(1000, 9999);
@@ -576,6 +582,9 @@ class EmployeeController extends Controller
                 $file->move($uploadPath, $imageName);
                 $image = $imageUrl;
             }
+
+            $rating = ( $request->performanceRating + $request->professionalSkillsRating 
+                    + $request->teamworkCommunicationRating + $request->attitudeBehaviourRating ) / 4;
 
             $employee = Employee::create([
                 'emp_id' => $request->empId,
@@ -595,10 +604,14 @@ class EmployeeController extends Controller
                 'linked_in' => $request->linkedIn,
                 'ex_employee' => $request->exEmployee,
                 'non_joiner' => $request->nonJoiner,
-                'rating' => $request->rating,
                 'review' => $request->review,
                 'date_of_leaving' => $request->dateOfLeaving ?? null,
                 'status_changed_at' => now(),
+                'overall_rating' => $rating,
+                'performance_rating' => $request->performanceRating ?? 0,
+                'professional_skills_rating' => $request->professionalSkillsRating ?? 0,
+                'teamwork_communication_rating' => $request->teamworkCommunicationRating ?? 0,
+                'attitude_behaviour_rating' => $request->attitudeBehaviourRating ?? 0,
             ]);
             if($employee){
                 return response()->json([
