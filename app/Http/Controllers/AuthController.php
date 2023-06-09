@@ -131,6 +131,8 @@ class AuthController extends Controller
                             "dispostable.com",
                             "mailinator.com",
                             "guerrillamail.com",
+                            "soremap.com",
+                            "vaband.com",
                         ];
 
             if (!in_array($request->domain, $badDomains)) {
@@ -141,7 +143,7 @@ class AuthController extends Controller
             } else {
                 return response()->json([
                     "status" => false,
-                    'message' => 'Please enter your company domain name',
+                    'message' => 'Invalid Domain',
                 ], 422);
             }
         }

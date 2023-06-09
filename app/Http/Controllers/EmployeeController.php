@@ -12,10 +12,12 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
 use ZipArchive;
 use App\Models\Employee;
+use App\Models\User;
 
 class EmployeeController extends Controller
 {
-    public function addEmployee(Request $request){
+    public function addEmployee(Request $request)
+    {
         $inputValidation = Validator::make($request->all(), [
             "empId" => 'required',
             "empName" => 'required',
@@ -27,23 +29,23 @@ class EmployeeController extends Controller
             'pan_number' => 'required',
             'linkedIn' => $request->linkedIn ? 'url' : '',
         ]);
-        if($inputValidation->fails()){
+        if($inputValidation->fails()) {
             return response()->json([
                 'status' => false,
                 'message' => 'Invalid data entered',
                 'errors' => $inputValidation->errors(),
             ], 422);
         }
-        try{
+        try {
             $added_by = Auth::user()->id;
             $image = "";
 
-            if($request->hasFile('image')){
+            if($request->hasFile('image')) {
                 $randomNumber = random_int(1000, 9999);
                 $file = $request->image;
                 $date = date('YmdHis');
                 $filename = "IMG_" . $randomNumber . "_" . $date;
-                $extension = strtolower( $file->getClientOriginalExtension() );
+                $extension = strtolower($file->getClientOriginalExtension());
                 $imageName = $filename . '.' . $extension;
                 $uploadPath = "uploads/users/profile_images/";
                 $imageUrl = $uploadPath . $imageName;
@@ -68,7 +70,7 @@ class EmployeeController extends Controller
                 'state' => $request->state ?? null,
                 'linked_in' => $request->linkedIn ?? null,
             ]);
-            if($employee){
+            if($employee) {
                 return response()->json([
                     'status' => true,
                     'message' => "saved successfully",
@@ -78,7 +80,7 @@ class EmployeeController extends Controller
                 'status' => false,
                 'message' => "some error occured",
             ], 400);
-        }catch(\Exception $e){
+        } catch(\Exception $e) {
             return response()->json([
                 'status' => false,
                 'message' => $e->getMessage(),
@@ -86,7 +88,8 @@ class EmployeeController extends Controller
         }
     }
 
-    public function updateEmployee(Request $request, string $id){
+    public function updateEmployee(Request $request, string $id)
+    {
         $inputValidation = Validator::make($request->all(), [
             "empId" => 'required',
             "empName" => 'required',
@@ -97,14 +100,14 @@ class EmployeeController extends Controller
             'pan_number' => 'required',
             'linkedIn' => $request->linkedIn ? 'url' : '',
         ]);
-        if($inputValidation->fails()){
+        if($inputValidation->fails()) {
             return response()->json([
                 'status' => false,
                 'message' => 'Invalid data entered',
                 'errors' => $inputValidation->errors(),
             ], 422);
         }
-        try{
+        try {
             $employeeDetails = employee::find($id);
 
             $employee = $employeeDetails->update([
@@ -122,7 +125,7 @@ class EmployeeController extends Controller
                 'state' => $request->state ?? null,
                 'linked_in' => $request->linkedIn ?? null,
             ]);
-            if($employee){
+            if($employee) {
                 return response()->json([
                     'status' => true,
                     'message' => "updated successfully",
@@ -132,7 +135,7 @@ class EmployeeController extends Controller
                 'status' => false,
                 'message' => "some error occured",
             ], 400);
-        }catch(\Exception $e){
+        } catch(\Exception $e) {
             return response()->json([
                 'status' => false,
                 'message' => $e->getMessage(),
@@ -140,44 +143,45 @@ class EmployeeController extends Controller
         }
     }
 
-    public function updateEmployeeImage(Request $request, string $id){
+    public function updateEmployeeImage(Request $request, string $id)
+    {
         $inputValidation = Validator::make($request->all(), [
             'image' => 'sometimes|file|mimes:jpg,jpeg,png|max:2048',
         ]);
-        if($inputValidation->fails()){
+        if($inputValidation->fails()) {
             return response()->json([
                 'status' => false,
                 'message' => 'Please select a file of type jpg, jpeg or png. Max size 2MB',
                 'errors' => $inputValidation->errors(),
             ], 422);
         }
-        try{
+        try {
             $employeeDetails = employee::find($id);
             $image = null;
             $oldImage = $request->oldImageName;
 
-            if($request->hasFile('image')){
+            if($request->hasFile('image')) {
                 $randomNumber = random_int(1000, 9999);
                 $file = $request->image;
                 $date = date('YmdHis');
                 $filename = "IMG_" . $randomNumber . "_" . $date;
-                $extension = strtolower( $file->getClientOriginalExtension() );
+                $extension = strtolower($file->getClientOriginalExtension());
                 $imageName = $filename . '.' . $extension;
                 $uploadPath = "uploads/users/profile_images/";
                 $imageUrl = $uploadPath . $imageName;
                 $file->move($uploadPath, $imageName);
                 $image = $imageUrl;
-                if($oldImage != "" && File::exists($oldImage)){
+                if($oldImage != "" && File::exists($oldImage)) {
                     File::delete($oldImage);
                 }
-            }else{
+            } else {
                 $image = $oldImage;
             }
 
             $employee = $employeeDetails->update([
                 'profile_image' => $image,
             ]);
-            if($employee){
+            if($employee) {
                 return response()->json([
                     'status' => true,
                     'message' => "Profile image updated successfully",
@@ -187,7 +191,7 @@ class EmployeeController extends Controller
                 'status' => false,
                 'message' => "some error occured",
             ], 400);
-        }catch(\Exception $e){
+        } catch(\Exception $e) {
             return response()->json([
                 'status' => false,
                 'message' => $e->getMessage(),
@@ -195,12 +199,13 @@ class EmployeeController extends Controller
         }
     }
 
-    public function uploadEmployeeUsingCSV(Request $request){
+    public function uploadEmployeeUsingCSV(Request $request)
+    {
         $inputValidation = Validator::make($request->all(), [
             'csv_file' => 'required|file|mimes:csv',
             'image_zip_folder' => 'sometimes|file|mimes:zip',
         ]);
-        if($inputValidation->fails()){
+        if($inputValidation->fails()) {
             return response()->json([
                 'status' => false,
                 'message' => 'Please select CSV file and zip file of images',
@@ -211,9 +216,9 @@ class EmployeeController extends Controller
         $extractPath = 'uploads/zipFolder/' . date('Ymd') . "_" . time() ;
         $file = $zipFolder->getClientOriginalName();
         $filename = pathinfo($file, PATHINFO_FILENAME);
-        $zip = new ZipArchive;
-        if ( $zip->open( $zipFolder->getRealPath() ) === true ) {
-            $zip->extractTo( $extractPath . "/");
+        $zip = new ZipArchive();
+        if ($zip->open($zipFolder->getRealPath()) === true) {
+            $zip->extractTo($extractPath . "/");
             $zip->close();
         } else {
             return response()->json(['message' => 'Failed to extract the zip folder. Try Again.'], 400);
@@ -229,16 +234,16 @@ class EmployeeController extends Controller
             $lineNumber = 0;
             $errCounter = 0;
             $successCounter = 0;
-    
+
             DB::beginTransaction();
-    
+
             while (($data = fgetcsv($handle)) !== false) {
                 $lineNumber++;
                 $image = null;
                 if ($lineNumber === 1) {
                     continue;
                 }
-    
+
                 $emp_id = $data[1];
                 $emp_name = $data[2];
                 $emp_email = $data[3];
@@ -257,7 +262,7 @@ class EmployeeController extends Controller
                 if ($emp_id != "" && $emp_name != "" && $emp_email != "" && $emp_phone != "") {
                     if ($imgPath != "" && $emp_image != "") {
                         $imagePath = $imgPath . $emp_image;
-                        if ( file_exists( $imagePath ) && is_readable( $imagePath ) ) {
+                        if (file_exists($imagePath) && is_readable($imagePath)) {
                             $randomNumber = random_int(100000, 999999);
                             $date = date('YmdHis');
                             $filename = "IMG_" . $randomNumber . "_" . $date ;
@@ -287,7 +292,7 @@ class EmployeeController extends Controller
                         'profile_image' => $image,
                         'added_by' => $added_by,
                     ]);
-    
+
                     $successCounter++;
                 } else {
                     $errCounter++;
@@ -300,24 +305,24 @@ class EmployeeController extends Controller
                     $dataUnableToInsert[$errCounter] = $dataError;
                 }
             }
-    
+
             DB::commit();
             fclose($handle);
             File::deleteDirectory($extractPath);
-    
-            if($successCounter){
+
+            if($successCounter) {
                 return response()->json([
                     'status' => true,
                     'message' => $successCounter . " employees saved successfully. " . $errCounter . " got error due to missing fields",
                     'errorList' => $dataUnableToInsert,
                 ], 200);
-            }else{
+            } else {
                 return response()->json([
                     'status' => false,
                     'message' => "some error occured. 0 files saved",
                 ], 400);
             }
-        }catch(\Exception $e){
+        } catch(\Exception $e) {
             return response()->json([
                 'status' => false,
                 'message' => $e->getMessage(),
@@ -325,7 +330,8 @@ class EmployeeController extends Controller
         }
     }
 
-    public function getCurrentEmployees(Request $request){
+    public function getCurrentEmployees(Request $request)
+    {
         $searchValue = $request->input('searchText', '');
         $position = $request->input('position', '');
         $id = $request->id ? $request->id : Auth::user()->id;
@@ -355,17 +361,18 @@ class EmployeeController extends Controller
         ], 200);
     }
 
-    public function getEmployeeById(string $id){
+    public function getEmployeeById(string $id)
+    {
         $employeeDetail = Employee::where('added_by', '=', Auth::user()->id)
                                 ->where('is_deleted', '=', 0)
                                 ->where('id', '=', $id)
                                 ->get();
-        if($employeeDetail){
+        if($employeeDetail) {
             return response()->json([
                 'status' => true,
                 'employee' => $employeeDetail,
             ], 200);
-        }else{
+        } else {
             return response()->json([
                 'status' => false,
                 'message' => "Employee Not Found",
@@ -373,7 +380,8 @@ class EmployeeController extends Controller
         }
     }
 
-    public function deleteEmployee(string $id){
+    public function deleteEmployee(string $id)
+    {
         $employee = Employee::find($id);
         if ($employee) {
             $employee->update([
@@ -383,7 +391,7 @@ class EmployeeController extends Controller
                 'status' => true,
                 'messsage' => 'Successfully deleted',
             ], 200);
-        }else{
+        } else {
             return response()->json([
                 'status' => false,
                 'messsage' => 'Employee not found',
@@ -391,7 +399,8 @@ class EmployeeController extends Controller
         }
     }
 
-    public function getExEmployees(Request $request){
+    public function getExEmployees(Request $request)
+    {
         $searchValue = $request->input('searchText', '');
         $position = $request->input('position', '');
         $id = $request->id ? $request->id : Auth::user()->id;
@@ -421,7 +430,8 @@ class EmployeeController extends Controller
         ], 200);
     }
 
-    public function getNonJoiners(Request $request){
+    public function getNonJoiners(Request $request)
+    {
         $searchValue = $request->input('searchText', '');
         $position = $request->input('position', '');
         $id = $request->id ? $request->id : Auth::user()->id;
@@ -450,7 +460,8 @@ class EmployeeController extends Controller
         ], 200);
     }
 
-    public function rateAndReview(Request $request, string $id){
+    public function rateAndReview(Request $request, string $id)
+    {
         $inputValidation = Validator::make($request->all(), [
             "exEmployee" => 'required',
             "nonJoiner" => 'required',
@@ -461,17 +472,17 @@ class EmployeeController extends Controller
             "review" => 'required',
             "dateOfLeaving" => 'required',
         ]);
-        if($inputValidation->fails()){
+        if($inputValidation->fails()) {
             return response()->json([
                 'status' => false,
                 'message' => 'Invalid data entered',
                 'errors' => $inputValidation->errors(),
             ], 422);
         }
-        try{
+        try {
             $employeeDetails = employee::find($id);
-            $rating = ( $request->performanceRating + $request->professionalSkillsRating 
-                    + $request->teamworkCommunicationRating + $request->attitudeBehaviourRating ) / 4;
+            $rating = ($request->performanceRating + $request->professionalSkillsRating
+                    + $request->teamworkCommunicationRating + $request->attitudeBehaviourRating) / 4;
             $employee = $employeeDetails->update([
                 'ex_employee' => $request->exEmployee,
                 'non_joiner' => $request->nonJoiner,
@@ -483,7 +494,7 @@ class EmployeeController extends Controller
                 'review' => $request->review,
                 'date_of_leaving' => $request->dateOfLeaving,
             ]);
-            if($employee){
+            if($employee) {
                 return response()->json([
                     'status' => true,
                     'message' => "Saved successfully",
@@ -493,7 +504,7 @@ class EmployeeController extends Controller
                 'status' => false,
                 'message' => "some error occured",
             ], 400);
-        }catch(\Exception $e){
+        } catch(\Exception $e) {
             return response()->json([
                 'status' => false,
                 'message' => $e->getMessage(),
@@ -501,10 +512,16 @@ class EmployeeController extends Controller
         }
     }
 
-    public function searchEmployeeGlobally(Request $request){
+    public function searchEmployeeGlobally(Request $request)
+    {
         $searchText = $request->searchText;
         $emp = $request->input('emp', '');
-        $employeesQuery = Employee::where('is_deleted', 0)
+        $employeesQuery = Employee::select('id',
+                            'emp_name',
+                            'phone',
+                            'profile_image',
+                            'overall_rating')
+                    ->where('is_deleted', 0)
                     ->where(function ($query) use ($searchText) {
                         $query->where('emp_name', 'like', '%' . $searchText . '%')
                             ->orWhere('email', 'like', '%' . $searchText . '%')
@@ -512,28 +529,28 @@ class EmployeeController extends Controller
                             ->orWhere('phone', 'like', '%' . $searchText . '%');
                     });
 
-                    if ( $emp != '' && $emp == 'current' ) {
-                        $employeesQuery->where('added_by', Auth::user()->id)
-                            ->where('ex_employee', 0)
-                            ->where('non_joiner', 0);
-                    } elseif ( $emp != '' && $emp == 'ex' ) {
-                        $employeesQuery->where('ex_employee', 1)
-                            ->where('non_joiner', 0);
-                    } elseif ( $emp != '' && $emp == 'nonJoiner' ) {
-                        $employeesQuery->where('ex_employee', 0)
-                            ->where('non_joiner', 1);
-                    } else{
-                        $employeesQuery->where(function ($query) {
-                            $query->where('added_by', Auth::user()->id)
-                                ->orWhere(function ($query) {
-                                    $query->where('ex_employee', 1)
-                                        ->orWhere('non_joiner', 1);
-                                });
-                        });
-                    }
+        if ($emp != '' && $emp == 'current') {
+            $employeesQuery->where('added_by', Auth::user()->id)
+                ->where('ex_employee', 0)
+                ->where('non_joiner', 0);
+        } elseif ($emp != '' && $emp == 'ex') {
+            $employeesQuery->where('ex_employee', 1)
+                ->where('non_joiner', 0);
+        } elseif ($emp != '' && $emp == 'nonJoiner') {
+            $employeesQuery->where('ex_employee', 0)
+                ->where('non_joiner', 1);
+        } else {
+            $employeesQuery->where(function ($query) {
+                $query->where('added_by', Auth::user()->id)
+                    ->orWhere(function ($query) {
+                        $query->where('ex_employee', 1)
+                            ->orWhere('non_joiner', 1);
+                    });
+            });
+        }
         $employees = $employeesQuery->paginate(10);
 
-        if($employees){
+        if($employees) {
             return response()->json([
                 'status' => true,
                 'employees' => $employees,
@@ -545,7 +562,8 @@ class EmployeeController extends Controller
         ], 404);
     }
 
-    public function addReview(Request $request){
+    public function addReview(Request $request)
+    {
         $inputValidation = Validator::make($request->all(), [
             "empName" => 'required',
             "email" => 'required',
@@ -559,23 +577,23 @@ class EmployeeController extends Controller
             "review" => 'required',
             "dateOfLeaving" => $request->dateOfLeaving ? 'date' : '',
         ]);
-        if($inputValidation->fails()){
+        if($inputValidation->fails()) {
             return response()->json([
                 'status' => false,
                 'message' => 'Invalid data entered',
                 'errors' => $inputValidation->errors(),
             ], 422);
         }
-        try{
+        try {
             $added_by = Auth::user()->id;
             $image = null;
 
-            if($request->hasFile('image')){
+            if($request->hasFile('image')) {
                 $randomNumber = random_int(1000, 9999);
                 $file = $request->image;
                 $date = date('YmdHis');
                 $filename = "IMG_" . $randomNumber . "_" . $date;
-                $extension = strtolower( $file->getClientOriginalExtension() );
+                $extension = strtolower($file->getClientOriginalExtension());
                 $imageName = $filename . '.' . $extension;
                 $uploadPath = "uploads/users/profile_images/";
                 $imageUrl = $uploadPath . $imageName;
@@ -583,8 +601,8 @@ class EmployeeController extends Controller
                 $image = $imageUrl;
             }
 
-            $rating = ( $request->performanceRating + $request->professionalSkillsRating 
-                    + $request->teamworkCommunicationRating + $request->attitudeBehaviourRating ) / 4;
+            $rating = ($request->performanceRating + $request->professionalSkillsRating
+                    + $request->teamworkCommunicationRating + $request->attitudeBehaviourRating) / 4;
 
             $employee = Employee::create([
                 'emp_id' => $request->empId,
@@ -613,7 +631,7 @@ class EmployeeController extends Controller
                 'teamwork_communication_rating' => $request->teamworkCommunicationRating ?? 0,
                 'attitude_behaviour_rating' => $request->attitudeBehaviourRating ?? 0,
             ]);
-            if($employee){
+            if($employee) {
                 return response()->json([
                     'status' => true,
                     'message' => "saved successfully",
@@ -623,7 +641,7 @@ class EmployeeController extends Controller
                 'status' => false,
                 'message' => "some error occured",
             ], 400);
-        }catch(\Exception $e){
+        } catch(\Exception $e) {
             return response()->json([
                 'status' => false,
                 'message' => $e->getMessage(),
@@ -631,13 +649,14 @@ class EmployeeController extends Controller
         }
     }
 
-    public function getTotalEmployees(String $id){
+    public function getTotalEmployees(String $id)
+    {
         $query = Employee::select('id', 'ex_employee', 'non_joiner')
                 ->where('added_by', $id)
                 ->where('is_deleted', 0)
                 ->get();
 
-        if( count ($query) > 0 ) {
+        if(count($query) > 0) {
             $currentEmp = $query->where('ex_employee', 0)
                     ->where('non_joiner', 0);
             $exEmp = $query->where('ex_employee', 1)
@@ -647,10 +666,10 @@ class EmployeeController extends Controller
 
             return response()->json([
                 'status' => true,
-                'totalCurrentEmp' => count( $currentEmp ),
-                'totalExEmp' => count( $exEmp ),
-                'totalNonJoiner' => count( $nonJoiner ),
-                'totalSubReview' => count( $exEmp ) + count( $nonJoiner ),
+                'totalCurrentEmp' => count($currentEmp),
+                'totalExEmp' => count($exEmp),
+                'totalNonJoiner' => count($nonJoiner),
+                'totalSubReview' => count($exEmp) + count($nonJoiner),
             ], 200);
         }
 
@@ -659,4 +678,88 @@ class EmployeeController extends Controller
             'message' => "No record found",
         ], 400);
     }
+
+    public function getEmployeeByIdForGlobalSearch(String $id)
+    {
+        try{
+            $employee = Employee::where('id', '=', $id)->first();
+            $user = User::where('id', $employee->added_by)->first();
+            if($employee && $user) {
+
+                if($user->taken_membership == 0) {
+                    $particularEmployee = Employee::select(
+                        'id',
+                        'emp_name',
+                        'phone',
+                        'profile_image',
+                        'overall_rating',
+                        'performance_rating',
+                        'professional_skills_rating',
+                        'teamwork_communication_rating',
+                        'attitude_behaviour_rating',
+                        'review',
+                    )
+                    ->where(function ($query) use ($employee) {
+                        $query->where('emp_pan', $employee->emp_pan)
+                            ->orWhere('phone', $employee->phone)
+                            ->orWhere('email', $employee->email);
+                    })
+                    ->where(function ($query) {
+                        $query->where('ex_employee', 1)
+                            ->orWhere('non_joiner', 1);
+                    })
+                    ->get();
+                    return response()->json([
+                        'status' => true,
+                        'taken_membership' => 0,
+                        'reviews' => $particularEmployee,
+                    ], 200);
+                } else if($user->taken_membership == 1) {
+                    $empUserWithMembership = Employee::select(
+                        'employees.id',
+                        'employees.emp_name',
+                        'employees.phone',
+                        'employees.profile_image',
+                        'employees.overall_rating',
+                        'employees.performance_rating',
+                        'employees.professional_skills_rating',
+                        'employees.teamwork_communication_rating',
+                        'employees.attitude_behaviour_rating',
+                        'employees.review',
+                        'users.company_name',
+                        'users.email AS company_email',
+                    )
+                    ->join('users', 'employees.added_by', '=', 'users.id')
+                    ->where(function ($query) use ($employee) {
+                        $query->where('employees.emp_pan', $employee->emp_pan)
+                            ->orWhere('employees.phone', $employee->phone)
+                            ->orWhere('employees.email', $employee->email);
+                    })
+                    ->where(function ($query) {
+                        $query->where('employees.ex_employee', 1)
+                            ->orWhere('employees.non_joiner', 1);
+                    })
+                    ->get();
+                    return response()->json([
+                        'status' => true,
+                        'taken_membership' => 1,
+                        'reviews' => $empUserWithMembership,
+                    ], 200);
+                }
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => "No record found",
+                ], 404);
+            }
+        } catch(\Exception $e){
+            return response()->json([ 'status' => false, 'message' => "Some error occured", ], 400);
+        }
+    }
+
 }
+
+// return response()->json([
+//     'status' => false,
+//     'message' => "No record found",
+// ], 400);
