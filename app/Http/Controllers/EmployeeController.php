@@ -764,8 +764,3 @@ class EmployeeController extends Controller
     }
 
 }
-
-// return response()->json([
-//     'status' => false,
-//     'message' => "No record found",
-// ], 400);
