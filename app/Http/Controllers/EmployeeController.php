@@ -520,6 +520,8 @@ class EmployeeController extends Controller
                             'emp_name',
                             'phone',
                             'profile_image',
+                            'ex_employee',
+                            'non_joiner',
                             'overall_rating')
                     ->where('is_deleted', 0)
                     ->where(function ($query) use ($searchText) {
@@ -683,10 +685,10 @@ class EmployeeController extends Controller
     {
         try{
             $employee = Employee::where('id', '=', $id)->first();
-            $user = User::where('id', $employee->added_by)->first();
-            if($employee && $user) {
+            // $user = User::where('id', $employee->added_by)->first();
+            if($employee) {
 
-                if($user->taken_membership == 0) {
+                if( Auth::user()->taken_membership == 0 ) {
                     $particularEmployee = Employee::select(
                         'id',
                         'emp_name',
@@ -716,7 +718,7 @@ class EmployeeController extends Controller
                         'taken_membership' => 0,
                         'reviews' => $particularEmployee,
                     ], 200);
-                } else if($user->taken_membership == 1) {
+                } else if( Auth::user()->taken_membership == 1 ) {
                     $empUserWithMembership = Employee::select(
                         'employees.id',
                         'employees.emp_name',
