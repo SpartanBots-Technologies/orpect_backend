@@ -134,8 +134,7 @@ class AuthController extends Controller
                             "soremap.com",
                             "vaband.com",
                         ];
-
-            if (!in_array($request->domain, $badDomains)) {
+            if (!in_array($request->domain, $badDomains) && preg_match('/\.[^.]{2,}$/', $request->domain)) {
                 return response()->json([
                     "status" => true,
                     'message' => 'Correct Domain',

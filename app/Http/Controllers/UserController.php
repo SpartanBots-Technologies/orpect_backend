@@ -132,6 +132,9 @@ class UserController extends Controller
                 'errors' => $inputValidation->errors(),
             ], 422);
         }
+        if($request->oldPassword == $request->newPassword){
+            return response()->json([ 'status' => false, 'message' => "Old and New passwords are same. Please choose different password", ], 422);
+        }
         try{
             $user = User::find( Auth::user()->id );
             if(Hash::check($request->oldPassword, $user->password)){
