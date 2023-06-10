@@ -603,11 +603,11 @@ class EmployeeController extends Controller
                 $image = $imageUrl;
             }
 
-            $rating = ($request->performanceRating + $request->professionalSkillsRating
-                    + $request->teamworkCommunicationRating + $request->attitudeBehaviourRating) / 4;
+            $rating = ( $request->performanceRating + $request->professionalSkillsRating
+                    + $request->teamworkCommunicationRating + $request->attitudeBehaviourRating ) / 4;
 
             $employee = Employee::create([
-                'emp_id' => $request->empId,
+                'emp_id' => $request->empId ?? null,
                 'emp_name' => $request->empName,
                 'email' => $request->email,
                 'phone' => $request->phone,
