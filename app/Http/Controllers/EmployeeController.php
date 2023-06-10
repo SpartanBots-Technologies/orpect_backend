@@ -703,6 +703,7 @@ class EmployeeController extends Controller
                         'attitude_behaviour_rating',
                         'review',
                     )
+                    ->where('is_deleted', 0)
                     ->where(function ($query) use ($employee) {
                         $query->where('emp_pan', $employee->emp_pan)
                             ->orWhere('phone', $employee->phone)
@@ -736,6 +737,7 @@ class EmployeeController extends Controller
                         'users.email AS company_email',
                     )
                     ->join('users', 'employees.added_by', '=', 'users.id')
+                    ->where('employees.is_deleted', 0)
                     ->where(function ($query) use ($employee) {
                         $query->where('employees.emp_pan', $employee->emp_pan)
                             ->orWhere('employees.phone', $employee->phone)
