@@ -25,7 +25,7 @@ class EmployeeController extends Controller
             "phone" => 'required',
             "position" => 'required',
             "dateOfJoining" => 'required',
-            'image' => 'required|file|mimes:jpg,jpeg,png|max:2048',
+            'image' => $request->image ? 'file|mimes:jpg,jpeg,png|max:2048' : '',
             'pan_number' => 'required',
             'linkedIn' => $request->linkedIn ? 'url' : '',
         ]);
@@ -38,7 +38,7 @@ class EmployeeController extends Controller
         }
         try {
             $added_by = Auth::user()->id;
-            $image = "";
+            $image = null;
 
             if($request->hasFile('image')) {
                 $randomNumber = random_int(1000, 9999);
