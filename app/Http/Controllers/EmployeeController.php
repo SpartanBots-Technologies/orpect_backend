@@ -492,7 +492,7 @@ class EmployeeController extends Controller
                 'attitude_behaviour_rating' => $request->attitudeBehaviourRating ?? 0,
                 'overall_rating' => $rating,
                 'review' => $request->review,
-                'date_of_leaving' => $request->dateOfLeaving,
+                'date_of_leaving' => $request->dateOfLeaving ?? null,
             ]);
             if($employee) {
                 return response()->json([
