@@ -470,7 +470,7 @@ class EmployeeController extends Controller
             "teamworkCommunicationRating" => 'required',
             "attitudeBehaviourRating" => 'required',
             "review" => 'required',
-            "dateOfLeaving" => 'required',
+            "dateOfLeaving" => $request->dateOfLeaving ? 'date' : '',
         ]);
         if($inputValidation->fails()) {
             return response()->json([
@@ -616,7 +616,7 @@ class EmployeeController extends Controller
                 'profile_image' => $image,
                 'added_by' => $added_by,
                 'date_of_birth' => $request->dateOfBirth,
-                'emp_pan' => $request->pan_number,
+                'emp_pan' => $request->pan_number ?? null,
                 'permanent_address' => $request->permanentAddress,
                 'city' => $request->city,
                 'country' => $request->country,
