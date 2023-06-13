@@ -236,6 +236,18 @@ class AuthController extends Controller
                 "added_by" => $user->id,
             ]);
         }
+        $useremail = $request->email;
+        $data = [
+            'CompanyName' => 'Orpect',
+            'websiteLogin' => 'https://orpect.com/login',
+        ];
+        try{ 
+            Mail::send('auth.underVerification', ['data' => $data], function ($message) use ($useremail){
+                $message->from('testspartanbots@gmail.com', 'Orpect');
+                $message->to($useremail)->subject('ORPECT - Registration successful. Account under verification'); 
+            });
+        } catch(\Exception $e){
+        }
         if( $user ){
             return response()->json([
                 'status' => true,
