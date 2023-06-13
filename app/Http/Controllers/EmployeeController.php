@@ -44,15 +44,15 @@ class EmployeeController extends Controller
         }
         if(Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('phone', $request->phone)->exists()){
             $cnt++;
-            $errorMsg = $errorMsg . ', Phone number';
+            $errorMsg = $errorMsg . ($errorMsg != "" ? ', Phone number' : 'Phone number');
         }
         if(Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('email', $request->email)->exists()){
             $cnt++;
-            $errorMsg = $errorMsg . ', Email';
+            $errorMsg = $errorMsg . ($errorMsg != "" ? ', Email' : 'Email');
         }
         if(Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('emp_pan', $request->pan_number)->exists()){
             $cnt++;
-            $errorMsg = $errorMsg . ', Tax number';
+            $errorMsg = $errorMsg . ($errorMsg != "" ? ', Tax number' : 'Tax number');
         }
         if($cnt > 0){
             return response()->json([ 'status' => false, 'message' => $errorMsg . ' already exists' ], 422);
@@ -527,21 +527,16 @@ class EmployeeController extends Controller
     public function searchEmployeeGlobally(Request $request){
         $searchText = $request->searchText;
         $emp = $request->input('emp', '');
-        $employeesQuery = Employee::select('id',
-                            'emp_name',
-                            'phone',
-                            'profile_image',
-                            'ex_employee',
-                            'non_joiner',
-                            'overall_rating')
+        $employeesQuery = Employee::select('emp_name', 'phone', 'email')
+                    ->selectRaw('COUNT(*) as total_reviews')
                     ->where('is_deleted', 0)
                     ->where(function ($query) use ($searchText) {
                         $query->where('emp_name', 'like', '%' . $searchText . '%')
                             ->orWhere('email', 'like', '%' . $searchText . '%')
                             ->orWhere('emp_pan', 'like', '%' . $searchText . '%')
                             ->orWhere('phone', 'like', '%' . $searchText . '%');
-                    });
-
+                    })
+                    ->groupBy('emp_name', 'phone', 'email');
         if ($emp != '' && $emp == 'ex') {
             $employeesQuery->where('ex_employee', 1)
                 ->where('non_joiner', 0);
@@ -556,14 +551,29 @@ class EmployeeController extends Controller
                     });
             });
         }
-        $employees = $employeesQuery->paginate(10);
+        $employeesPaginated = $employeesQuery->paginate(10);
 
-        if($employees) {
-            return response()->json([
-                'status' => true,
-                'employees' => $employees,
-            ], 200);
-        }
+        if ($employeesPaginated->isNotEmpty()) {
+            $ids = $employeesPaginated->getCollection()->mapWithKeys(function ($employee) {
+            $firstId = Employee::where('emp_name', $employee->emp_name)
+            ->where('phone', $employee->phone)
+            ->where('email', $employee->email)
+            ->value('id');
+
+            return [
+                $employee->emp_name . '-' . $employee->phone . '-' . $employee->email => $firstId,
+            ];
+        });
+        $employeesPaginated->getCollection()->each(function ($employee) use ($ids) {
+            $key = $employee->emp_name . '-' . $employee->phone . '-' . $employee->email;
+            $employee->id = $ids[$key];
+        });
+
+        return response()->json([
+            'status' => true,
+            'employees' => $employeesPaginated,
+        ], 200);
+    }
         return response()->json([
             'status' => false,
             'message' => "No record found",
@@ -602,16 +612,16 @@ class EmployeeController extends Controller
             }
             if(Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('phone', $request->phone)->exists()){
                 $cnt++;
-                $errorMsg = $errorMsg . ', Phone number';
+                $errorMsg = $errorMsg . ($errorMsg != "" ? ', Phone number' : 'Phone number');
             }
             if(Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('email', $request->email)->exists()){
                 $cnt++;
-                $errorMsg = $errorMsg . ', Email';
+                $errorMsg = $errorMsg . ($errorMsg != "" ? ', Email' : 'Email');
             }
             if($request->pan_number != "" && $request->pan_number != null 
                     && Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('emp_pan', $request->pan_number)->exists()){
                 $cnt++;
-                $errorMsg = $errorMsg . ', Tax number';
+                $errorMsg = $errorMsg . ($errorMsg != "" ? ', Tax number' : 'Tax number');
             }
             if($cnt > 0){
                 return response()->json([ 'status' => false, 'message' => $errorMsg . ' already exists' ], 422);
