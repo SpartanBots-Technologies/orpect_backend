@@ -16,12 +16,11 @@ use App\Models\User;
 
 class EmployeeController extends Controller
 {
-    public function addEmployee(Request $request)
-    {
+    public function addEmployee(Request $request){
         $inputValidation = Validator::make($request->all(), [
             "empId" => 'required',
             "empName" => 'required',
-            "email" => 'required',
+            "email" => 'required|email',
             "phone" => 'required',
             "position" => 'required',
             "dateOfJoining" => 'required',
@@ -36,8 +35,16 @@ class EmployeeController extends Controller
                 'errors' => $inputValidation->errors(),
             ], 422);
         }
+        $added_by = Auth::user()->id;
+        if(Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('phone', $request->phone)->exists()){
+            return response()->json([ 'status' => false, 'message' => 'Phone number Already exists' ], 422);
+        }else if(Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('email', $request->email)->exists()){
+            return response()->json([ 'status' => false, 'message' => 'Email number Already exists' ], 422);
+        }else if(Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('emp_pan', $request->pan_number)->exists()){
+            return response()->json([ 'status' => false, 'message' => 'Pan number Already exists' ], 422);
+        }
+
         try {
-            $added_by = Auth::user()->id;
             $image = null;
 
             if($request->hasFile('image')) {
@@ -88,8 +95,7 @@ class EmployeeController extends Controller
         }
     }
 
-    public function updateEmployee(Request $request, string $id)
-    {
+    public function updateEmployee(Request $request, string $id){
         $inputValidation = Validator::make($request->all(), [
             "empId" => 'required',
             "empName" => 'required',
@@ -143,8 +149,7 @@ class EmployeeController extends Controller
         }
     }
 
-    public function updateEmployeeImage(Request $request, string $id)
-    {
+    public function updateEmployeeImage(Request $request, string $id){
         $inputValidation = Validator::make($request->all(), [
             'image' => 'sometimes|file|mimes:jpg,jpeg,png|max:2048',
         ]);
@@ -199,8 +204,7 @@ class EmployeeController extends Controller
         }
     }
 
-    public function uploadEmployeeUsingCSV(Request $request)
-    {
+    public function uploadEmployeeUsingCSV(Request $request){
         $inputValidation = Validator::make($request->all(), [
             'csv_file' => 'required|file|mimes:csv',
             'image_zip_folder' => 'sometimes|file|mimes:zip',
@@ -330,8 +334,7 @@ class EmployeeController extends Controller
         }
     }
 
-    public function getCurrentEmployees(Request $request)
-    {
+    public function getCurrentEmployees(Request $request){
         $searchValue = $request->input('searchText', '');
         $position = $request->input('position', '');
         $id = $request->id ? $request->id : Auth::user()->id;
@@ -361,8 +364,7 @@ class EmployeeController extends Controller
         ], 200);
     }
 
-    public function getEmployeeById(string $id)
-    {
+    public function getEmployeeById(string $id){
         $employeeDetail = Employee::where('added_by', '=', Auth::user()->id)
                                 ->where('is_deleted', '=', 0)
                                 ->where('id', '=', $id)
@@ -380,8 +382,7 @@ class EmployeeController extends Controller
         }
     }
 
-    public function deleteEmployee(string $id)
-    {
+    public function deleteEmployee(string $id){
         $employee = Employee::find($id);
         if ($employee) {
             $employee->update([
@@ -399,8 +400,7 @@ class EmployeeController extends Controller
         }
     }
 
-    public function getExEmployees(Request $request)
-    {
+    public function getExEmployees(Request $request){
         $searchValue = $request->input('searchText', '');
         $position = $request->input('position', '');
         $id = $request->id ? $request->id : Auth::user()->id;
@@ -430,8 +430,7 @@ class EmployeeController extends Controller
         ], 200);
     }
 
-    public function getNonJoiners(Request $request)
-    {
+    public function getNonJoiners(Request $request){
         $searchValue = $request->input('searchText', '');
         $position = $request->input('position', '');
         $id = $request->id ? $request->id : Auth::user()->id;
@@ -460,8 +459,7 @@ class EmployeeController extends Controller
         ], 200);
     }
 
-    public function rateAndReview(Request $request, string $id)
-    {
+    public function rateAndReview(Request $request, string $id){
         $inputValidation = Validator::make($request->all(), [
             "exEmployee" => 'required',
             "nonJoiner" => 'required',
@@ -512,8 +510,7 @@ class EmployeeController extends Controller
         }
     }
 
-    public function searchEmployeeGlobally(Request $request)
-    {
+    public function searchEmployeeGlobally(Request $request){
         $searchText = $request->searchText;
         $emp = $request->input('emp', '');
         $employeesQuery = Employee::select('id',
@@ -531,11 +528,7 @@ class EmployeeController extends Controller
                             ->orWhere('phone', 'like', '%' . $searchText . '%');
                     });
 
-        if ($emp != '' && $emp == 'current') {
-            $employeesQuery->where('added_by', Auth::user()->id)
-                ->where('ex_employee', 0)
-                ->where('non_joiner', 0);
-        } elseif ($emp != '' && $emp == 'ex') {
+        if ($emp != '' && $emp == 'ex') {
             $employeesQuery->where('ex_employee', 1)
                 ->where('non_joiner', 0);
         } elseif ($emp != '' && $emp == 'nonJoiner') {
@@ -543,8 +536,7 @@ class EmployeeController extends Controller
                 ->where('non_joiner', 1);
         } else {
             $employeesQuery->where(function ($query) {
-                $query->where('added_by', Auth::user()->id)
-                    ->orWhere(function ($query) {
+                $query->where(function ($query) {
                         $query->where('ex_employee', 1)
                             ->orWhere('non_joiner', 1);
                     });
@@ -564,8 +556,7 @@ class EmployeeController extends Controller
         ], 404);
     }
 
-    public function addReview(Request $request)
-    {
+    public function addReview(Request $request){
         $inputValidation = Validator::make($request->all(), [
             "empName" => 'required',
             "email" => 'required',
@@ -588,6 +579,14 @@ class EmployeeController extends Controller
         }
         try {
             $added_by = Auth::user()->id;
+            if(Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('phone', $request->phone)->exists()){
+                return response()->json([ 'status' => false, 'message' => 'Phone number Already exists' ], 422);
+            }else if(Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('email', $request->email)->exists()){
+                return response()->json([ 'status' => false, 'message' => 'Email number Already exists' ], 422);
+            }else if($request->pan_number != "" && $request->pan_number != null 
+                        && Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('emp_pan', $request->pan_number)->exists()){
+                return response()->json([ 'status' => false, 'message' => 'Pan number Already exists' ], 422);
+            }
             $image = null;
 
             if($request->hasFile('image')) {
@@ -651,8 +650,7 @@ class EmployeeController extends Controller
         }
     }
 
-    public function getTotalEmployees(String $id)
-    {
+    public function getTotalEmployees(String $id){
         $query = Employee::select('id', 'ex_employee', 'non_joiner')
                 ->where('added_by', $id)
                 ->where('is_deleted', 0)
@@ -681,11 +679,9 @@ class EmployeeController extends Controller
         ], 400);
     }
 
-    public function getEmployeeByIdForGlobalSearch(String $id)
-    {
+    public function getEmployeeByIdForGlobalSearch(String $id){
         try{
             $employee = Employee::where('id', '=', $id)->first();
-            // $user = User::where('id', $employee->added_by)->first();
             if($employee) {
 
                 if( Auth::user()->taken_membership == 0 ) {
@@ -705,9 +701,14 @@ class EmployeeController extends Controller
                     )
                     ->where('is_deleted', 0)
                     ->where(function ($query) use ($employee) {
-                        $query->where('emp_pan', $employee->emp_pan)
-                            ->orWhere('phone', $employee->phone)
-                            ->orWhere('email', $employee->email);
+                        if ($employee->emp_pan != null && $employee->emp_pan != '') {
+                            $query->where('emp_pan', $employee->emp_pan)
+                                ->orWhere('phone', $employee->phone)
+                                ->orWhere('email', $employee->email);
+                        } else {
+                            $query->where('phone', $employee->phone)
+                                ->orWhere('email', $employee->email);
+                        }
                     })
                     ->where(function ($query) {
                         $query->where('ex_employee', 1)
@@ -739,9 +740,14 @@ class EmployeeController extends Controller
                     ->join('users', 'employees.added_by', '=', 'users.id')
                     ->where('employees.is_deleted', 0)
                     ->where(function ($query) use ($employee) {
-                        $query->where('employees.emp_pan', $employee->emp_pan)
-                            ->orWhere('employees.phone', $employee->phone)
-                            ->orWhere('employees.email', $employee->email);
+                        if ($employee->emp_pan != null && $employee->emp_pan != '') {
+                            $query->where('emp_pan', $employee->emp_pan)
+                                ->orWhere('phone', $employee->phone)
+                                ->orWhere('email', $employee->email);
+                        } else {
+                            $query->where('phone', $employee->phone)
+                                ->orWhere('email', $employee->email);
+                        }
                     })
                     ->where(function ($query) {
                         $query->where('employees.ex_employee', 1)
