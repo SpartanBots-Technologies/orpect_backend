@@ -36,12 +36,26 @@ class EmployeeController extends Controller
             ], 422);
         }
         $added_by = Auth::user()->id;
+        $errorMsg = "";
+        $cnt = 0;
+        if(Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('emp_id', $request->empId)->exists()){
+            $cnt++;
+            $errorMsg = $errorMsg . 'Employee Id';
+        }
         if(Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('phone', $request->phone)->exists()){
-            return response()->json([ 'status' => false, 'message' => 'Phone number Already exists' ], 422);
-        }else if(Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('email', $request->email)->exists()){
-            return response()->json([ 'status' => false, 'message' => 'Email number Already exists' ], 422);
-        }else if(Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('emp_pan', $request->pan_number)->exists()){
-            return response()->json([ 'status' => false, 'message' => 'Pan number Already exists' ], 422);
+            $cnt++;
+            $errorMsg = $errorMsg . ', Phone number';
+        }
+        if(Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('email', $request->email)->exists()){
+            $cnt++;
+            $errorMsg = $errorMsg . ', Email';
+        }
+        if(Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('emp_pan', $request->pan_number)->exists()){
+            $cnt++;
+            $errorMsg = $errorMsg . ', Tax number';
+        }
+        if($cnt > 0){
+            return response()->json([ 'status' => false, 'message' => $errorMsg . ' already exists' ], 422);
         }
 
         try {
@@ -579,13 +593,28 @@ class EmployeeController extends Controller
         }
         try {
             $added_by = Auth::user()->id;
+            $errorMsg = "";
+            $cnt = 0;
+            if($request->empId != "" && $request->empId != null 
+                && Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('emp_id', $request->empId)->exists()){
+                $cnt++;
+                $errorMsg = $errorMsg . 'Employee Id';
+            }
             if(Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('phone', $request->phone)->exists()){
-                return response()->json([ 'status' => false, 'message' => 'Phone number Already exists' ], 422);
-            }else if(Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('email', $request->email)->exists()){
-                return response()->json([ 'status' => false, 'message' => 'Email number Already exists' ], 422);
-            }else if($request->pan_number != "" && $request->pan_number != null 
-                        && Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('emp_pan', $request->pan_number)->exists()){
-                return response()->json([ 'status' => false, 'message' => 'Pan number Already exists' ], 422);
+                $cnt++;
+                $errorMsg = $errorMsg . ', Phone number';
+            }
+            if(Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('email', $request->email)->exists()){
+                $cnt++;
+                $errorMsg = $errorMsg . ', Email';
+            }
+            if($request->pan_number != "" && $request->pan_number != null 
+                    && Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('emp_pan', $request->pan_number)->exists()){
+                $cnt++;
+                $errorMsg = $errorMsg . ', Tax number';
+            }
+            if($cnt > 0){
+                return response()->json([ 'status' => false, 'message' => $errorMsg . ' already exists' ], 422);
             }
             $image = null;
 
