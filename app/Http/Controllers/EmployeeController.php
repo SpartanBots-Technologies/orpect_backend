@@ -435,7 +435,7 @@ class EmployeeController extends Controller
             $query->where('position', '=', $position);
         }
 
-        $employeeDetails = $query->orderBy('date_of_leaving', 'desc')
+        $employeeDetails = $query->orderBy('status_changed_at', 'desc')
         ->paginate(10);
 
         return response()->json([
@@ -465,7 +465,7 @@ class EmployeeController extends Controller
             $query->where('position', '=', $position);
         }
 
-        $employeeDetails = $query->orderBy('date_of_leaving', 'desc')
+        $employeeDetails = $query->orderBy('status_changed_at', 'desc')
         ->paginate(10);
         return response()->json([
             'status' => true,
@@ -505,6 +505,7 @@ class EmployeeController extends Controller
                 'overall_rating' => $rating,
                 'review' => $request->review,
                 'date_of_leaving' => $request->dateOfLeaving ?? null,
+                'status_changed_at' => now(),
             ]);
             if($employee) {
                 return response()->json([
@@ -556,24 +557,24 @@ class EmployeeController extends Controller
         if ($employeesPaginated->isNotEmpty()) {
             $ids = $employeesPaginated->getCollection()->mapWithKeys(function ($employee) {
             $firstId = Employee::where('emp_name', $employee->emp_name)
-            ->where('phone', $employee->phone)
-            ->where('email', $employee->email)
-            ->value('id');
+                ->where('phone', $employee->phone)
+                ->where('email', $employee->email)
+                ->value('id');
 
-            return [
-                $employee->emp_name . '-' . $employee->phone . '-' . $employee->email => $firstId,
-            ];
-        });
-        $employeesPaginated->getCollection()->each(function ($employee) use ($ids) {
-            $key = $employee->emp_name . '-' . $employee->phone . '-' . $employee->email;
-            $employee->id = $ids[$key];
-        });
+                return [
+                    $employee->emp_name . '-' . $employee->phone . '-' . $employee->email => $firstId,
+                ];
+            });
+            $employeesPaginated->getCollection()->each(function ($employee) use ($ids) {
+                $key = $employee->emp_name . '-' . $employee->phone . '-' . $employee->email;
+                $employee->id = $ids[$key];
+            });
 
-        return response()->json([
-            'status' => true,
-            'employees' => $employeesPaginated,
-        ], 200);
-    }
+            return response()->json([
+                'status' => true,
+                'employees' => $employeesPaginated,
+            ], 200);
+        }
         return response()->json([
             'status' => false,
             'message' => "No record found",
@@ -808,6 +809,46 @@ class EmployeeController extends Controller
         } catch(\Exception $e){
             return response()->json([ 'status' => false, 'message' => "Some error occured", ], 400);
         }
+    }
+
+    public function getExEmployeesAndNonJoiners(Request $request){
+        $searchValue = $request->input('searchText', '');
+        $position = $request->input('position', '');
+        $emp = $request->input('emp', '');
+        // $id = $request->id ? $request->id : Auth::user()->id;
+        $id = Auth::user()->id;
+        $query = Employee::where('added_by', '=', $id)
+                    ->where('is_deleted', '=', 0)
+                    ->where(function ($query) {
+                        $query->where(function ($query) {
+                            $query->where('ex_employee', 1)
+                                ->orWhere('non_joiner', 1);
+                        });
+                    });
+
+        if (!empty($searchValue)) {
+            $query->where(function ($query) use ($searchValue) {
+                $query->where('emp_name', 'LIKE', "%$searchValue%")
+                    ->orWhere('email', 'LIKE', "%$searchValue%")
+                    ->orWhere('phone', 'LIKE', "%$searchValue%");
+            });
+        }
+
+        if (!empty($position)) {
+            $query->where('position', '=', $position);
+        }
+        if (!empty($emp) && $emp == 'ex') {
+            $query->where('ex_employee', '=', 1);
+        }else if (!empty($emp) && $emp == 'nonJoiner') {
+            $query->where('non_joiner', '=', 1);
+        }
+        $employeeDetails = $query->orderBy('status_changed_at', 'desc')
+        ->paginate(10);
+
+        return response()->json([
+            'status' => true,
+            'exEmployee' => $employeeDetails,
+        ], 200);
     }
 
 }
