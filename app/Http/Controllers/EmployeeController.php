@@ -20,7 +20,7 @@ class EmployeeController extends Controller
         $inputValidation = Validator::make($request->all(), [
             "empId" => 'required',
             "empName" => 'required',
-            "email" => 'required|email',
+            "email" => 'required|email:filter',
             "phone" => 'required',
             "position" => 'required',
             "dateOfJoining" => 'required',
@@ -113,7 +113,7 @@ class EmployeeController extends Controller
         $inputValidation = Validator::make($request->all(), [
             "empId" => 'required',
             "empName" => 'required',
-            "email" => 'required',
+            "email" => 'required|email:filter',
             "phone" => 'required',
             "position" => 'required',
             "dateOfJoining" => 'required',
@@ -129,7 +129,32 @@ class EmployeeController extends Controller
         }
         try {
             $employeeDetails = employee::find($id);
-
+            $added_by = Auth::user()->id;
+            $errorMsg = "";
+            $cnt = 0;
+            if($request->empId != $employeeDetails->emp_id 
+                && Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('emp_id', $request->empId)->exists()){
+                $cnt++;
+                $errorMsg = $errorMsg . 'Employee Id';
+            }
+            if($request->phone != $employeeDetails->phone 
+                && Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('phone', $request->phone)->exists()){
+                $cnt++;
+                $errorMsg = $errorMsg . ($errorMsg != "" ? ', Phone number' : 'Phone number');
+            }
+            if($request->email != $employeeDetails->email 
+                && Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('email', $request->email)->exists()){
+                $cnt++;
+                $errorMsg = $errorMsg . ($errorMsg != "" ? ', Email' : 'Email');
+            }
+            if($request->pan_number != $employeeDetails->emp_pan 
+                && Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('emp_pan', $request->pan_number)->exists()){
+                $cnt++;
+                $errorMsg = $errorMsg . ($errorMsg != "" ? ', Tax number' : 'Tax number');
+            }
+            if($cnt > 0){
+                return response()->json([ 'status' => false, 'message' => $errorMsg . ' already exists' ], 422);
+            }
             $employee = $employeeDetails->update([
                 'emp_id' => $request->empId,
                 'emp_name' => $request->empName,
@@ -584,7 +609,7 @@ class EmployeeController extends Controller
     public function addReview(Request $request){
         $inputValidation = Validator::make($request->all(), [
             "empName" => 'required',
-            "email" => 'required',
+            "email" => 'required|email:filter',
             "phone" => 'required',
             "position" => 'required',
             "dateOfJoining" => $request->dateOfJoining ? 'date' : '',

@@ -162,7 +162,7 @@ class AuthController extends Controller
             "fullName" => 'required',
             "designation" => 'required',
             "domainName" => 'required',
-            "email" => 'required|email|unique:users,email',
+            "email" => 'required|email:filter|unique:users,email',
             "password" => 'required|min:6|confirmed',
             "otp" => 'required',
             'companyPhone' => 'required|regex:/^[0-9]{10}$/',
@@ -276,12 +276,21 @@ class AuthController extends Controller
             'password' => $request->input('password')
         ])){
             $user = Auth::user();
-            $token = $user->createToken($user->email.'_api_token')->plainTextToken;
-            return response()->json([
-                'status' => true,
-                'user' => $user,
-                'token' => $token,
-            ], 200);
+            if ($user->is_account_verified == 1) {
+                $token = $user->createToken($user->email.'_api_token')->plainTextToken;
+                return response()->json([
+                    'status' => true,
+                    'is_verified' => 1,
+                    'user' => $user,
+                    'token' => $token,
+                ], 200);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'is_verified' => 0,
+                    'message' => 'Account not verified.',
+                ], 401);
+            }
         }else{
             return response()->json([
                 'status' => false,
