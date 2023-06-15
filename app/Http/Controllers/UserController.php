@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Mail;
 use App\Models\User;
 use App\Models\Position;
 use App\Models\Employee;
@@ -307,6 +308,37 @@ class UserController extends Controller
             }
         }else{
             return response()->json([ 'status' => false, 'message' => "Some error occured", ], 400);
+        }
+    }
+
+    public function verifyCompany(String $id){
+        $companydetails = User::where('id', $id)->where('is_deleted', 0)->first();
+        if($companydetails){
+            $companydetails->update([
+                "is_account_verified" => 1
+            ]);
+            $useremail = $companydetails->email;
+            $data = [
+                'CompanyName' => 'Orpect',
+                'websiteLink' => 'https://orpect.com/',
+                'websiteLogin' => 'https://orpect.com/login',
+            ];
+            try{ 
+                Mail::send('auth.accountVerified', ['data' => $data], function ($message) use ($useremail){
+                    $message->from('testspartanbots@gmail.com', 'Orpect');
+                    $message->to($useremail)->subject('ORPECT - Account Verified'); 
+                });
+            } catch(\Exception $e){
+            }
+            return response()->json([
+                'status' => true,
+                'messsage' => "Company successfully verified",
+            ], 200);
+        }else{
+            return response()->json([
+                'status' => false,
+                'message' => "Company doesn't exists",
+            ], 404);
         }
     }
 }
