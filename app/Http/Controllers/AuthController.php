@@ -288,7 +288,7 @@ class AuthController extends Controller
                 return response()->json([
                     'status' => false,
                     'is_verified' => 0,
-                    'message' => 'Account not verified.',
+                    'message' => 'Account not verified yet.',
                 ], 401);
             }
         }else{
