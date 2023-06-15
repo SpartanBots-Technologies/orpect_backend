@@ -361,7 +361,7 @@ class UserController extends Controller
             ->get();
         return response()->json([
             'status' => true,
-            'messsage' => $companydetails,
+            'pendingRequests' => $companydetails,
         ], 200);
     }
 }
