@@ -109,15 +109,16 @@ class EmployeeController extends Controller
         }
     }
 
+    //update Employee will work for update ExEmployee also
     public function updateEmployee(Request $request, string $id){
         $inputValidation = Validator::make($request->all(), [
-            "empId" => 'required',
+            "empId" => $request->nonjoiner != 1 ? 'required' : '',
             "empName" => 'required',
             "email" => 'required|email:filter',
             "phone" => 'required',
-            "position" => 'required',
-            "dateOfJoining" => 'required',
-            'pan_number' => 'required',
+            "position" => $request->nonjoiner != 1 ? 'required' : '',
+            "dateOfJoining" => $request->nonjoiner != 1 ? 'date' : '',
+            'pan_number' => $request->nonjoiner != 1 ? 'required' : '',
             'linkedIn' => $request->linkedIn ? 'url' : '',
         ]);
         if($inputValidation->fails()) {
@@ -156,14 +157,14 @@ class EmployeeController extends Controller
                 return response()->json([ 'status' => false, 'message' => $errorMsg . ' already exists' ], 422);
             }
             $employee = $employeeDetails->update([
-                'emp_id' => $request->empId,
+                'emp_id' => $request->empId ? $request->empId : null,
                 'emp_name' => $request->empName,
                 'email' => $request->email,
                 'phone' => $request->phone,
-                'position' => $request->position,
-                'date_of_joining' => $request->dateOfJoining,
+                'position' => $request->position ? $request->position : null,
+                'date_of_joining' => $request->dateOfJoining ? $request->dateOfJoining : null,
                 'date_of_birth' => $request->dateOfBirth ?? null,
-                'emp_pan' => $request->pan_number,
+                'emp_pan' => $request->pan_number ? $request->pan_number : null,
                 'permanent_address' => $request->permanentAddress ?? null,
                 'city' => $request->city ?? null,
                 'country' => $request->country ?? null,
@@ -246,27 +247,35 @@ class EmployeeController extends Controller
     public function uploadEmployeeUsingCSV(Request $request){
         $inputValidation = Validator::make($request->all(), [
             'csv_file' => 'required|file|mimes:csv',
-            'image_zip_folder' => 'sometimes|file|mimes:zip',
+            'image_zip_folder' => $request->hasFile('image_zip_folder') ? 'file|mimes:zip' : '',
         ]);
         if($inputValidation->fails()) {
             return response()->json([
                 'status' => false,
-                'message' => 'Please select CSV file and zip file of images',
+                'message' => 'Please select CSV file for data and zip file for images (if uploading images)',
                 'errors' => $inputValidation->errors(),
             ], 422);
         }
-        $zipFolder = $request->file('image_zip_folder');
-        $extractPath = 'uploads/zipFolder/' . date('Ymd') . "_" . time() ;
-        $file = $zipFolder->getClientOriginalName();
-        $filename = pathinfo($file, PATHINFO_FILENAME);
-        $zip = new ZipArchive();
-        if ($zip->open($zipFolder->getRealPath()) === true) {
-            $zip->extractTo($extractPath . "/");
-            $zip->close();
-        } else {
-            return response()->json(['message' => 'Failed to extract the zip folder. Try Again.'], 400);
+        $imgPath = "";
+        $extractPath = "";
+        if($request->hasFile('image_zip_folder')){
+            try{
+                $zipFolder = $request->file('image_zip_folder');
+                $extractPath = 'uploads/zipFolder/' . date('Ymd') . "_" . time() ;
+                $file = $zipFolder->getClientOriginalName();
+                $filename = pathinfo($file, PATHINFO_FILENAME);
+                $zip = new ZipArchive();
+                if ($zip->open($zipFolder->getRealPath()) === true) {
+                    $zip->extractTo($extractPath . "/");
+                    $zip->close();
+                } else {
+                    return response()->json(['message' => 'Failed to extract the image zip folder. Try Again.'], 400);
+                }
+                $imgPath = $extractPath . "/" . $filename . "/";
+            }catch(\Exception $e){
+                return response()->json(['message' => 'Failed to extract the image zip folder. Try Again.'], 400);
+            }
         }
-        $imgPath = $extractPath . "/" . $filename . "/";
 
         try {
             $added_by = Auth::user()->id;
@@ -299,44 +308,139 @@ class EmployeeController extends Controller
                 $country = $data[10];
                 $state = $data[11];
                 $emp_doj = $data[12];
-                $linked_in = $data[13];
-                $emp_image = $data[14];
+                $emp_dol = $data[13];
+                $ex_emp = $data[14];
+                $non_joiner = $data[15];
+                $prfmce_rat = $data[16];
+                $prfsnl_skl_rat = $data[17];
+                $team_cmuntn_rat = $data[18];
+                $attde_bhavr_rat = $data[19];
+                $review = $data[20];
+                $linked_in = $data[21];
+                $emp_image = $data[22];
 
-                if ($emp_id != "" && $emp_name != "" && $emp_email != "" && $emp_phone != "") {
-                    if ($imgPath != "" && $emp_image != "") {
-                        $imagePath = $imgPath . $emp_image;
-                        if (file_exists($imagePath) && is_readable($imagePath)) {
-                            $randomNumber = random_int(100000, 999999);
-                            $date = date('YmdHis');
-                            $filename = "IMG_" . $randomNumber . "_" . $date ;
-                            $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
-                            $imageName = $filename . '.' . $extension;
-                            $uploadPath = "uploads/users/profile_images/";
-                            $image = $uploadPath . $imageName;
-                            rename($imagePath, $image);
-                        }
+                if ( $emp_name != "" && $emp_email != "" && $emp_phone != "") {
+                    $errorMsg = "";
+                    $cnt = 0;
+                    if($non_joiner != 1 && $emp_id == ""){
+                        $cnt++;
+                        $errorMsg = $errorMsg . 'Employee Id is missing';
                     }
-                    $emp_dob = $emp_dob != "" && Carbon::parse($emp_dob) ? Carbon::parse($emp_dob)->format('Y-m-d') : null;
-                    $emp_doj = $emp_doj != "" && Carbon::parse($emp_doj) ? Carbon::parse($emp_doj)->format('Y-m-d') : null;
-                    $employee = Employee::create([
-                        'emp_id' => $emp_id,
-                        'emp_name' => $emp_name,
-                        'email' => $emp_email,
-                        'phone' => $emp_phone,
-                        'position' => $emp_position ? $emp_position : null,
-                        'date_of_birth' => $emp_dob,
-                        'date_of_joining' => $emp_doj,
-                        'emp_pan' => $emp_pan ? $emp_pan : null,
-                        'permanent_address' => $emp_address ? $emp_address : null,
-                        'city' => $city ? $city : null,
-                        'country' => $country ? $country : null,
-                        'state' => $state ? $state : null,
-                        'linked_in' => $linked_in ? $linked_in : null,
-                        'profile_image' => $image,
-                        'added_by' => $added_by,
-                    ]);
+                    if($non_joiner != 1 && $emp_id != "" && $emp_id != null 
+                        && Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('emp_id', $emp_id)->exists()){
+                        $cnt++;
+                        $errorMsg = $errorMsg . 'Employee Id';
+                    }
+                    if(Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('phone', $emp_phone)->exists()){
+                        $cnt++;
+                        $errorMsg = $errorMsg . ($errorMsg != "" ? ', Phone number' : 'Phone number');
+                    }
+                    if(Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('email', $emp_email)->exists()){
+                        $cnt++;
+                        $errorMsg = $errorMsg . ($errorMsg != "" ? ', Email' : 'Email');
+                    }
+                    if($emp_pan != "" && $emp_pan != null 
+                        && Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('emp_pan', $emp_pan)->exists()){
+                        $cnt++;
+                        $errorMsg = $errorMsg . ($errorMsg != "" ? ', Tax number' : 'Tax number');
+                    }
+                    if($cnt == 0){
+                        if($ex_emp == 1 && $non_joiner == 0){
+                            $ex_emp = 1;
+                            $non_joiner = 0;
+                            $emp_doj = $emp_doj != "" && Carbon::parse($emp_doj) ? Carbon::parse($emp_doj)->format('Y-m-d') : null;
+                            $emp_dol = $emp_dol != "" && Carbon::parse($emp_dol) ? Carbon::parse($emp_dol)->format('Y-m-d') : null;
+                            $prfmce_rat = is_numeric($prfmce_rat) && is_int($prfmce_rat + 0) && $prfmce_rat < 6 ? $prfmce_rat : 0;
+                            $prfsnl_skl_rat = is_numeric($prfsnl_skl_rat) && is_int($prfsnl_skl_rat + 0) && $prfsnl_skl_rat < 6 ? $prfsnl_skl_rat : 0; 
+                            $team_cmuntn_rat = is_numeric($team_cmuntn_rat) && is_int($team_cmuntn_rat + 0) && $team_cmuntn_rat < 6 ? $team_cmuntn_rat : 0;
+                            $attde_bhavr_rat = is_numeric($attde_bhavr_rat) && is_int($attde_bhavr_rat + 0) && $attde_bhavr_rat < 6 ? $attde_bhavr_rat : 0;
+                            $overall_rat = ($prfmce_rat + $prfsnl_skl_rat + $team_cmuntn_rat + $attde_bhavr_rat ) / 4;
+                            $review = $review != "" ? $review : null;
+                            $status_changed_at = now();
+                        }else if ($ex_emp == 0 && $non_joiner == 1){
+                            $ex_emp = 0;
+                            $non_joiner = 1;
+                            $emp_doj = null;
+                            $emp_dol = null;
+                            $prfmce_rat = 0;
+                            $prfsnl_skl_rat = 0; 
+                            $team_cmuntn_rat = 0;
+                            $attde_bhavr_rat = 0;
+                            $overall_rat = 0;
+                            $review = $review != "" ? $review : null;
+                            $status_changed_at = now();
+                        }else{
+                            $ex_emp = 0;
+                            $non_joiner = 0;
+                            $emp_doj = $emp_doj != "" && Carbon::parse($emp_doj) ? Carbon::parse($emp_doj)->format('Y-m-d') : null;
+                            $emp_dol = null;
+                            $prfmce_rat = 0;
+                            $prfsnl_skl_rat = 0; 
+                            $team_cmuntn_rat = 0;
+                            $attde_bhavr_rat = 0;
+                            $overall_rat = 0;
+                            $review = null;
+                            $status_changed_at = null;
+                        }
 
-                    $successCounter++;
+                        if ($imgPath != "" && $emp_image != "") {
+                            $imagePath = $imgPath . $emp_image;
+                            try{
+                                if (file_exists($imagePath) && is_readable($imagePath)) {
+                                    $randomNumber = random_int(100000, 999999);
+                                    $date = date('YmdHis');
+                                    $filename = "IMG_" . $randomNumber . "_" . $date ;
+                                    $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
+                                    $imageName = $filename . '.' . $extension;
+                                    $uploadPath = "uploads/users/profile_images/";
+                                    $image = $uploadPath . $imageName;
+                                    rename($imagePath, $image);
+                                }
+                            }catch(\Exception $e){
+                            }
+                        }
+                        $emp_dob = $emp_dob != "" && Carbon::parse($emp_dob) ? Carbon::parse($emp_dob)->format('Y-m-d') : null;
+
+                        Employee::create([
+                            'emp_id' => $emp_id != "" ? $emp_id : null,
+                            'emp_name' => $emp_name,
+                            'email' => $emp_email,
+                            'phone' => $emp_phone,
+                            'position' => $emp_position ? $emp_position : null,
+                            'date_of_birth' => $emp_dob,
+                            'date_of_joining' => $emp_doj,
+                            'date_of_leaving' => $emp_dol,
+                            'added_by' => $added_by,
+                            'ex_employee' => $ex_emp,
+                            'non_joiner' => $non_joiner,
+                            'emp_pan' => $emp_pan ? $emp_pan : null,
+                            'permanent_address' => $emp_address ? $emp_address : null,
+                            'city' => $city ? $city : null,
+                            'country' => $country ? $country : null,
+                            'state' => $state ? $state : null,
+                            'linked_in' => $linked_in ? $linked_in : null,
+                            'profile_image' => $image,
+                            'status_changed_at' => $status_changed_at,
+                            'overall_rating' => $overall_rat,
+                            'performance_rating' => $prfmce_rat,
+                            'professional_skills_rating' => $prfsnl_skl_rat,
+                            'teamwork_communication_rating' => $team_cmuntn_rat,
+                            'attitude_behaviour_rating' => $attde_bhavr_rat,
+                            'review' => $review,
+                        ]);
+
+                        $successCounter++;
+                    }else{
+                        $errCounter++;
+                        $dataError = [
+                            "emp_id" => $emp_id,
+                            "emp_name" => $emp_name,
+                            "email" => $emp_email,
+                            "phone" => $emp_phone,
+                            "message" => $errorMsg . ' already exists',
+                        ];
+                        $dataUnableToInsert[$errCounter] = $dataError;
+                    }
                 } else {
                     $errCounter++;
                     $dataError = [
@@ -344,6 +448,7 @@ class EmployeeController extends Controller
                         "emp_name" => $emp_name,
                         "email" => $emp_email,
                         "phone" => $emp_phone,
+                        "message" => "Any of these four fields are missing",
                     ];
                     $dataUnableToInsert[$errCounter] = $dataError;
                 }
@@ -351,24 +456,30 @@ class EmployeeController extends Controller
 
             DB::commit();
             fclose($handle);
-            File::deleteDirectory($extractPath);
+            if (!empty($extractPath) && file_exists($extractPath)) {
+                File::deleteDirectory($extractPath);
+            }
 
             if($successCounter) {
                 return response()->json([
                     'status' => true,
-                    'message' => $successCounter . " employees saved successfully. " . $errCounter . " got error due to missing fields",
+                    'message' => $successCounter . " employees saved successfully. " . $errCounter . " got error due to missing fields or already exists",
                     'errorList' => $dataUnableToInsert,
                 ], 200);
             } else {
                 return response()->json([
                     'status' => false,
                     'message' => "some error occured. 0 files saved",
+                    'errorList' => $dataUnableToInsert,
                 ], 400);
             }
         } catch(\Exception $e) {
+            if (!empty($extractPath) && file_exists($extractPath)) {
+                File::deleteDirectory($extractPath);
+            }
             return response()->json([
                 'status' => false,
-                'message' => $e->getMessage(),
+                'message' => strpos($e->getMessage(), 'array key') !== false ? 'Please make sure you have all the fields in CSV file' : $e->getMessage() ,
             ], 400);
         }
     }
