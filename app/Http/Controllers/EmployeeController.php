@@ -148,7 +148,7 @@ class EmployeeController extends Controller
                 $cnt++;
                 $errorMsg = $errorMsg . ($errorMsg != "" ? ', Email' : 'Email');
             }
-            if($request->pan_number != $employeeDetails->emp_pan 
+            if($request->nonjoiner != 1 && $request->pan_number != $employeeDetails->emp_pan 
                 && Employee::where('added_by', $added_by)->where('is_deleted', 0)->where('emp_pan', $request->pan_number)->exists()){
                 $cnt++;
                 $errorMsg = $errorMsg . ($errorMsg != "" ? ', Tax number' : 'Tax number');
