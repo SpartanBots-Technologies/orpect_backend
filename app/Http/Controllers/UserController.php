@@ -267,7 +267,7 @@ class UserController extends Controller
     }
 
     public function getCompanies(){
-        $allCompanies = User::where('is_deleted', 0)->where('is_account_verified', 0)->paginate(10);
+        $allCompanies = User::where('is_deleted', 0)->where('is_account_verified', 1)->paginate(10);
         if($allCompanies){
             return response()->json([
                 'status' => true,
@@ -340,5 +340,28 @@ class UserController extends Controller
                 'message' => "Company doesn't exists",
             ], 404);
         }
+    }
+
+    public function getPendingVerificationRequests(){
+        $companydetails = User::select(
+                                        'id',
+                                        'company_name',
+                                        'company_type',
+                                        'full_name',
+                                        'designation',
+                                        'domain_name',
+                                        'email',
+                                        'company_phone',
+                                        'registration_number',
+                                        'created_at AS registration_time',
+                                )
+            ->where('is_account_verified', 0)
+            ->where('is_deleted', 0)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        return response()->json([
+            'status' => true,
+            'messsage' => $companydetails,
+        ], 200);
     }
 }

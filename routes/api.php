@@ -80,5 +80,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/getCompanyById/{id}', [UserController::class, 'getCompanyById']);
         Route::delete('/deleteCompany/{id}', [UserController::class, 'deleteCompany']);
         Route::post('/verifyCompany/{id}', [UserController::class, 'verifyCompany']);
+        Route::get('/getPendingVerificationRequests', [UserController::class, 'getPendingVerificationRequests']);
     });
 });
