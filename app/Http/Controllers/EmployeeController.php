@@ -672,6 +672,14 @@ class EmployeeController extends Controller
             'employees.profile_image',
             'employees.ex_employee',
             'employees.non_joiner',
+            DB::raw("
+                CASE
+                    WHEN employees.ex_employee = 1 AND employees.non_joiner = 0 THEN 'Ex Employee'
+                    WHEN employees.ex_employee = 0 AND employees.non_joiner = 1 THEN 'Non Joiner'
+                    WHEN employees.ex_employee = 0 AND employees.non_joiner = 0 THEN 'Current Employee'
+                    ELSE 'Unknown'
+                END AS employee_type
+            "),
             'employees.overall_rating',
             'employees.performance_rating',
             'employees.professional_skills_rating',
@@ -680,7 +688,7 @@ class EmployeeController extends Controller
             DB::raw("DATE_FORMAT(employees.created_at, '%d-%m-%Y') AS added_on"),
             'employees.linked_in',
             'users.company_name',
-            DB::raw('(SELECT COUNT(*) FROM employees AS e2 WHERE (e2.phone = employees.phone OR e2.email = employees.email OR e2.emp_pan = employees.emp_pan)) AS total_reviews')
+            DB::raw('(SELECT COUNT(*) FROM employees AS e2 WHERE (e2.phone = employees.phone OR e2.email = employees.email OR e2.emp_pan = employees.emp_pan)) AS total_reviews'),
         )
         ->join('users', 'users.id', '=', 'employees.added_by') // Joined `users` table
         ->where('employees.is_deleted', 0)
