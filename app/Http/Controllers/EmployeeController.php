@@ -642,6 +642,7 @@ class EmployeeController extends Controller
                 'review' => $request->review,
                 'date_of_leaving' => $request->dateOfLeaving ?? null,
                 'status_changed_at' => now(),
+                'last_CTC' => $request->lastCTC ? $request->lastCTC : null,
             ]);
             if($employee) {
                 return response()->json([
@@ -818,6 +819,7 @@ class EmployeeController extends Controller
                 'professional_skills_rating' => $request->professionalSkillsRating ?? 0,
                 'teamwork_communication_rating' => $request->teamworkCommunicationRating ?? 0,
                 'attitude_behaviour_rating' => $request->attitudeBehaviourRating ?? 0,
+                'last_CTC' => $request->lastCTC ? $request->lastCTC : null,
             ]);
             if($employee) {
                 return response()->json([
@@ -875,6 +877,7 @@ class EmployeeController extends Controller
                     $particularEmployee = Employee::select(
                         'id',
                         'emp_name',
+                        'email',
                         'phone',
                         'profile_image',
                         'ex_employee',
