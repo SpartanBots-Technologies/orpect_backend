@@ -263,7 +263,7 @@ class AuthController extends Controller
 
         $inputValidation = Validator::make($request->all(), [
             "email" => 'required|email',
-            "password" => 'required|min:6',
+            "password" => 'required',
         ]);
         if($inputValidation->fails()){
             return response()->json([
@@ -276,19 +276,26 @@ class AuthController extends Controller
             'password' => $request->input('password')
         ])){
             $user = Auth::user();
-            if ($user->is_account_verified == 1) {
-                $token = $user->createToken($user->email.'_api_token')->plainTextToken;
-                return response()->json([
-                    'status' => true,
-                    'is_verified' => 1,
-                    'user' => $user,
-                    'token' => $token,
-                ], 200);
-            } else {
+            if ($user->is_deleted == 0) {
+                if ($user->is_account_verified == 1) {
+                    $token = $user->createToken($user->email.'_api_token')->plainTextToken;
+                    return response()->json([
+                        'status' => true,
+                        'is_verified' => 1,
+                        'user' => $user,
+                        'token' => $token,
+                    ], 200);
+                } else {
+                    return response()->json([
+                        'status' => false,
+                        'is_verified' => 0,
+                        'message' => 'Account not verified yet',
+                    ], 401);
+                }
+            }else{
                 return response()->json([
                     'status' => false,
-                    'is_verified' => 0,
-                    'message' => 'Account not verified yet.',
+                    'message' => 'Account has been removed by super admin',
                 ], 401);
             }
         }else{
@@ -447,7 +454,7 @@ class AuthController extends Controller
 
         $inputValidation = Validator::make($request->all(), [
             "email" => 'required|email',
-            "password" => 'required|min:6',
+            "password" => 'required',
         ]);
         if($inputValidation->fails()){
             return response()->json([
@@ -458,12 +465,20 @@ class AuthController extends Controller
 
         $admin = SuperAdmin::where('email', $request->email)->first();
         if ( $admin && Hash::check($request->password, $admin->password)) {
-            $token = $admin->createToken($request->email.'_api_token')->plainTextToken;
-            return response()->json([
-                'status' => true,
-                'user' => $admin,
-                'token' => $token,
-            ], 200);
+            if($admin->is_deleted == 0){
+                $token = $admin->createToken($request->email.'_api_token')->plainTextToken;
+                return response()->json([
+                    'status' => true,
+                    'user' => $admin,
+                    'token' => $token,
+                ], 200);
+            }else{
+                return response()->json([
+                    'status' => false,
+                    'messsage' => "Account has been removed",
+                ], 401); 
+            }
+            
         } else {
             return response()->json([
                 'status' => false,
