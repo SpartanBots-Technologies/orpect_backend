@@ -884,7 +884,21 @@ class EmployeeController extends Controller
                         'professional_skills_rating',
                         'teamwork_communication_rating',
                         'attitude_behaviour_rating',
+                        DB::raw("
+                            CASE
+                                WHEN employees.ex_employee = 1 AND employees.non_joiner = 0 THEN 'Ex Employee'
+                                WHEN employees.ex_employee = 0 AND employees.non_joiner = 1 THEN 'Non Joiner'
+                                WHEN employees.ex_employee = 0 AND employees.non_joiner = 0 THEN 'Current Employee'
+                                ELSE 'Unknown'
+                            END AS employee_type
+                        "),
+                        DB::raw("DATE_FORMAT(created_at, '%d-%m-%Y') AS added_on"),
                         'review',
+                        'linked_in',
+                        DB::raw("DATE_FORMAT(status_changed_at, '%d-%m-%Y') AS last_review_on"),
+                        'last_CTC',
+                        DB::raw("DATE_FORMAT(date_of_joining, '%d-%m-%Y') AS date_of_joining"),
+                        DB::raw("DATE_FORMAT(date_of_leaving, '%d-%m-%Y') AS date_of_leaving"),
                     )
                     ->where('is_deleted', 0)
                     ->where(function ($query) use ($employee) {
@@ -901,7 +915,7 @@ class EmployeeController extends Controller
                         $query->where('ex_employee', 1)
                             ->orWhere('non_joiner', 1);
                     })
-                    ->get();
+                    ->paginate(5);
                     return response()->json([
                         'status' => true,
                         'taken_membership' => 0,
@@ -940,7 +954,7 @@ class EmployeeController extends Controller
                         $query->where('employees.ex_employee', 1)
                             ->orWhere('employees.non_joiner', 1);
                     })
-                    ->get();
+                    ->paginate(5);
                     return response()->json([
                         'status' => true,
                         'taken_membership' => 1,
