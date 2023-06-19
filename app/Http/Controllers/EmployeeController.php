@@ -664,48 +664,51 @@ class EmployeeController extends Controller
     public function searchEmployeeGlobally(Request $request){
         $searchText = $request->searchText;
         $emp = $request->input('emp', '');
-        $employeesQuery = Employee::select('emp_name', 'phone', 'email')
-                    ->selectRaw('COUNT(*) as total_reviews')
-                    ->where('is_deleted', 0)
-                    ->where(function ($query) use ($searchText) {
-                        $query->where('emp_name', 'like', '%' . $searchText . '%')
-                            ->orWhere('email', 'like', '%' . $searchText . '%')
-                            ->orWhere('emp_pan', 'like', '%' . $searchText . '%')
-                            ->orWhere('phone', 'like', '%' . $searchText . '%');
-                    })
-                    ->groupBy('emp_name', 'phone', 'email');
+        $employeesQuery = Employee::select(
+            'employees.id',
+            'employees.emp_name',
+            'employees.email',
+            'employees.phone',
+            'employees.profile_image',
+            'employees.ex_employee',
+            'employees.non_joiner',
+            'employees.overall_rating',
+            'employees.performance_rating',
+            'employees.professional_skills_rating',
+            'employees.teamwork_communication_rating',
+            'employees.attitude_behaviour_rating',
+            DB::raw("DATE_FORMAT(employees.created_at, '%d-%m-%Y') AS added_on"),
+            'employees.linked_in',
+            'users.company_name',
+            DB::raw('(SELECT COUNT(*) FROM employees AS e2 WHERE (e2.phone = employees.phone OR e2.email = employees.email OR e2.emp_pan = employees.emp_pan)) AS total_reviews')
+        )
+        ->join('users', 'users.id', '=', 'employees.added_by') // Joined `users` table
+        ->where('employees.is_deleted', 0)
+        ->where(function ($query) use ($searchText) {
+            $query->where('employees.emp_name', 'like', '%' . $searchText . '%')
+                ->orWhere('employees.email', 'like', '%' . $searchText . '%')
+                ->orWhere('employees.emp_pan', 'like', '%' . $searchText . '%')
+                ->orWhere('employees.phone', 'like', '%' . $searchText . '%');
+        });
+        
         if ($emp != '' && $emp == 'ex') {
-            $employeesQuery->where('ex_employee', 1)
-                ->where('non_joiner', 0);
+            $employeesQuery->where('employees.ex_employee', 1)
+                ->where('employees.non_joiner', 0);
         } elseif ($emp != '' && $emp == 'nonJoiner') {
-            $employeesQuery->where('ex_employee', 0)
-                ->where('non_joiner', 1);
+            $employeesQuery->where('employees.ex_employee', 0)
+                ->where('employees.non_joiner', 1);
         } else {
             $employeesQuery->where(function ($query) {
                 $query->where(function ($query) {
-                        $query->where('ex_employee', 1)
-                            ->orWhere('non_joiner', 1);
-                    });
+                    $query->where('employees.ex_employee', 1)
+                        ->orWhere('employees.non_joiner', 1);
+                });
             });
         }
+        
         $employeesPaginated = $employeesQuery->paginate(10);
 
-        if ($employeesPaginated->isNotEmpty()) {
-            $ids = $employeesPaginated->getCollection()->mapWithKeys(function ($employee) {
-            $firstId = Employee::where('emp_name', $employee->emp_name)
-                ->where('phone', $employee->phone)
-                ->where('email', $employee->email)
-                ->value('id');
-
-                return [
-                    $employee->emp_name . '-' . $employee->phone . '-' . $employee->email => $firstId,
-                ];
-            });
-            $employeesPaginated->getCollection()->each(function ($employee) use ($ids) {
-                $key = $employee->emp_name . '-' . $employee->phone . '-' . $employee->email;
-                $employee->id = $ids[$key];
-            });
-
+        if($employeesPaginated) {
             return response()->json([
                 'status' => true,
                 'employees' => $employeesPaginated,
