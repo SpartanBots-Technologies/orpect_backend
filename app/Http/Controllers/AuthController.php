@@ -332,7 +332,7 @@ class AuthController extends Controller
         $useremail = $request->email;
         if(User::where('email', '=', $useremail)->exists()){
             $uid =  Str::uuid()->toString();
-            $domain =  config('services.react.domain');
+            $domain =  $request->currentDomain;
 
             $data = [
                 'userName' => $useremail,
@@ -514,12 +514,12 @@ class AuthController extends Controller
         $useremail = $request->email;
         if(SuperAdmin::where('email', '=', $useremail)->exists()){
             $uid =  Str::uuid()->toString();
-            $domain =  config('services.react.domain');
+            $domain =  $request->currentDomain;
 
             $data = [
                 'userName' => $useremail,
                 'CompanyName' => 'Orpect',
-                'link' => $domain.'/admin/reset-password?token='.$uid,
+                'link' => $domain.'/spadmin/reset-password?token='.$uid,
             ];
 
             Mail::send('auth.forgotPassEmailTemp', ['data' => $data], function ($message) use ($useremail){
