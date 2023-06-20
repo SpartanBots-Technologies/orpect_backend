@@ -76,6 +76,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/getAllAdmins', [SuperAdminController::class, 'getAllAdmins']);
         Route::get('/getAdminById/{id}', [SuperAdminController::class, 'getAdminById']);
 
+        Route::get('/getCurrentEmployees', [EmployeeController::class, 'getCurrentEmployees']);
+        Route::get('/getEmployeeById/{id}', [EmployeeController::class, 'getEmployeeById']);
+        Route::get('/getExEmployees', [EmployeeController::class, 'getExEmployees']);
+        Route::get('/getNonJoiners', [EmployeeController::class, 'getNonJoiners']);
+
         Route::get('/getCompanies', [UserController::class, 'getCompanies']);
         Route::get('/getCompanyById/{id}', [UserController::class, 'getCompanyById']);
         Route::delete('/deleteCompany/{id}', [UserController::class, 'deleteCompany']);
