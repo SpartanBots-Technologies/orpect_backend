@@ -439,7 +439,7 @@ class EmployeeController extends Controller
                             "phone" => $emp_phone,
                             "message" => $errorMsg . ' already exists',
                         ];
-                        $dataUnableToInsert[$errCounter] = $dataError;
+                        $dataUnableToInsert[] = $dataError;
                     }
                 } else {
                     $errCounter++;
@@ -450,7 +450,7 @@ class EmployeeController extends Controller
                         "phone" => $emp_phone,
                         "message" => "Any of these four fields are missing",
                     ];
-                    $dataUnableToInsert[$errCounter] = $dataError;
+                    $dataUnableToInsert[] = $dataError;
                 }
             }
 
