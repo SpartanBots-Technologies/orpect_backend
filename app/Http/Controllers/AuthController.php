@@ -320,7 +320,8 @@ class AuthController extends Controller
 
     public function forgotpassword(Request $request){
         $inputValidation = Validator::make($request->all(), [
-            "email" => 'required|email'
+            "email" => 'required|email',
+            "currentDomain" => 'required'
         ]);
         if($inputValidation->fails()){
             return response()->json([
@@ -502,7 +503,8 @@ class AuthController extends Controller
 
     public function forgotPasswordAdmin(Request $request){
         $inputValidation = Validator::make($request->all(), [
-            "email" => 'required|email'
+            "email" => 'required|email',
+            "currentDomain" => 'required'
         ]);
         if($inputValidation->fails()){
             return response()->json([
