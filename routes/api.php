@@ -26,6 +26,7 @@ Route::group(['prefix'=>'admin'],function(){
     Route::post('/loginAdmin', [AuthController::class, 'loginAdmin']);
     Route::post('/forgot-password', [AuthController::class, 'forgotPasswordAdmin']);
     Route::post('/reset-password', [AuthController::class, 'resetPasswordAdmin']);
+    Route::post('/isTokenValid', [AuthController::class, 'isTokenValid']);
 });
 
 Route::post('/sendVerificationOtp', [AuthController::class, 'sendEmailVerificationOtp']);
