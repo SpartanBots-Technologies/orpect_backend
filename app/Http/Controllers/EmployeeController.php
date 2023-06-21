@@ -647,7 +647,7 @@ class EmployeeController extends Controller
                 'review' => $request->review,
                 'date_of_leaving' => $request->dateOfLeaving ?? null,
                 'status_changed_at' => now(),
-                'last_CTC' => $request->lastCTC ? $request->lastCTC : null,
+                'last_CTC' => isset($request->lastCTC) && $request->lastCTC != "" && preg_match('/^\d+$/', $request->lastCTC) ? $request->lastCTC : null,
             ]);
             if($employee) {
                 return response()->json([
@@ -692,6 +692,7 @@ class EmployeeController extends Controller
             'employees.teamwork_communication_rating',
             'employees.attitude_behaviour_rating',
             DB::raw("DATE_FORMAT(employees.created_at, '%d-%m-%Y') AS added_on"),
+            DB::raw("DATE_FORMAT(status_changed_at, '%d-%m-%Y') AS last_review_on"),
             'employees.linked_in',
             'users.company_name',
             DB::raw('(SELECT COUNT(*) FROM employees AS e2 WHERE (e2.phone = employees.phone OR e2.email = employees.email OR e2.emp_pan = employees.emp_pan)) AS total_reviews'),
@@ -824,7 +825,7 @@ class EmployeeController extends Controller
                 'professional_skills_rating' => $request->professionalSkillsRating ?? 0,
                 'teamwork_communication_rating' => $request->teamworkCommunicationRating ?? 0,
                 'attitude_behaviour_rating' => $request->attitudeBehaviourRating ?? 0,
-                'last_CTC' => $request->lastCTC ? $request->lastCTC : null,
+                'last_CTC' => isset($request->lastCTC) && $request->lastCTC != "" && preg_match('/^\d+$/', $request->lastCTC) ? $request->lastCTC : null,
             ]);
             if($employee) {
                 return response()->json([
