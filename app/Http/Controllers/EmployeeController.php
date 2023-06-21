@@ -317,7 +317,8 @@ class EmployeeController extends Controller
                 $attde_bhavr_rat = $data[19];
                 $review = $data[20];
                 $linked_in = $data[21];
-                $emp_image = $data[22];
+                $lastCTC = $data[22];
+                $emp_image = $data[23];
 
                 if ( $emp_name != "" && $emp_email != "" && $emp_phone != "") {
                     $errorMsg = "";
@@ -357,6 +358,7 @@ class EmployeeController extends Controller
                             $overall_rat = ($prfmce_rat + $prfsnl_skl_rat + $team_cmuntn_rat + $attde_bhavr_rat ) / 4;
                             $review = $review != "" ? $review : null;
                             $status_changed_at = now();
+                            $lastCTC = preg_match('/^\d+$/', $lastCTC) ? $lastCTC : null;
                         }else if ($ex_emp == 0 && $non_joiner == 1){
                             $ex_emp = 0;
                             $non_joiner = 1;
@@ -369,6 +371,7 @@ class EmployeeController extends Controller
                             $overall_rat = 0;
                             $review = $review != "" ? $review : null;
                             $status_changed_at = now();
+                            $lastCTC = null;
                         }else{
                             $ex_emp = 0;
                             $non_joiner = 0;
@@ -381,6 +384,7 @@ class EmployeeController extends Controller
                             $overall_rat = 0;
                             $review = null;
                             $status_changed_at = null;
+                            $lastCTC = preg_match('/^\d+$/', $lastCTC) ? $lastCTC : null;
                         }
 
                         if ($imgPath != "" && $emp_image != "") {
@@ -427,6 +431,7 @@ class EmployeeController extends Controller
                             'teamwork_communication_rating' => $team_cmuntn_rat,
                             'attitude_behaviour_rating' => $attde_bhavr_rat,
                             'review' => $review,
+                            'last_CTC' => $lastCTC,
                         ]);
 
                         $successCounter++;

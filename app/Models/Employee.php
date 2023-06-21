@@ -36,5 +36,6 @@ class Employee extends Model
             'professional_skills_rating',
             'teamwork_communication_rating',
             'attitude_behaviour_rating',
+            'last_CTC',
     ];
 }
