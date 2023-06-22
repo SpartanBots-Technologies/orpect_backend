@@ -227,6 +227,9 @@ class UserController extends Controller
         $position = Position::where('id', $id)->first();
         if($position){
             if( !Position::where('position', trim($request->position))->where('added_by', Auth::user()->id)->exists() ){
+                Employee::where('added_by', Auth::user()->id)
+                        ->where('position', $position->position)
+                        ->update(['position' => trim($request->position)]);
                 $position->update([
                     "position" => trim($request->position)
                 ]);
@@ -268,6 +271,7 @@ class UserController extends Controller
 
     public function getPositionAlreadyInUse(String $position){
         $count = Employee::where('added_by', Auth::user()->id)
+                ->where('is_deleted', 0)
                 ->where('position', $position)
                 ->count();
         return response()->json([
