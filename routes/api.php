@@ -64,6 +64,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/updatePosition/{id}', [UserController::class, 'updatePosition']);
     Route::get('/getPositions', [UserController::class, 'getPositions']);
     Route::delete('/removePosition/{id}', [UserController::class, 'removePosition']);
+    Route::get('/getPositionAlreadyInUse/{position}', [UserController::class, 'getPositionAlreadyInUse']);
     Route::post('/updateProfile', [UserController::class, 'updateProfile']);
     Route::post('/updateUserImage', [UserController::class, 'updateUserImage']);
     Route::post('/updatePassword', [UserController::class, 'updateUserPassword']);
