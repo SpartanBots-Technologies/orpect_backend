@@ -520,7 +520,38 @@ class EmployeeController extends Controller
     }
 
     public function getEmployeeById(string $id){
-        $employeeDetail = Employee::where('added_by', '=', Auth::user()->id)
+        $employeeDetail = Employee::select(
+                                        "id",
+                                        "emp_id",
+                                        "emp_name",
+                                        "email",
+                                        "phone",
+                                        "position",
+                                        DB::raw("DATE_FORMAT(date_of_joining, '%d-%m-%Y') AS date_of_joining"),
+                                        "profile_image",
+                                        "ex_employee",
+                                        "non_joiner",
+                                        DB::raw("DATE_FORMAT(date_of_leaving, '%d-%m-%Y') AS date_of_leaving"),
+                                        "review",
+                                        "added_by",
+                                        "created_at",
+                                        "updated_at",
+                                        "is_deleted",
+                                        DB::raw("DATE_FORMAT(date_of_birth, '%d-%m-%Y') AS date_of_birth"),
+                                        "emp_pan",
+                                        "permanent_address",
+                                        "city",
+                                        "country",
+                                        "state",
+                                        "linked_in",
+                                        "status_changed_at",
+                                        "overall_rating",
+                                        "performance_rating",
+                                        "professional_skills_rating",
+                                        "teamwork_communication_rating",
+                                        "attitude_behaviour_rating",
+                                        "last_CTC")
+                                ->where('added_by', '=', Auth::user()->id)
                                 ->where('is_deleted', '=', 0)
                                 ->where('id', '=', $id)
                                 ->get();
