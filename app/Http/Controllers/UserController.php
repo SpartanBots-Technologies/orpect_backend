@@ -266,6 +266,16 @@ class UserController extends Controller
         }
     }
 
+    public function getPositionAlreadyInUse(String $position){
+        $count = Employee::where('added_by', Auth::user()->id)
+                ->where('position', $position)
+                ->count();
+        return response()->json([
+            'status' => true,
+            'positionInUse' => $count,
+        ], 200);
+    }
+
     public function getCompanies(){
         $allCompanies = User::where('is_deleted', 0)->where('is_account_verified', 1)->paginate(10);
         if($allCompanies){
