@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Validator;
 use ZipArchive;
 use App\Models\Employee;
 use App\Models\User;
+use App\Models\Position;
 
 class EmployeeController extends Controller
 {
@@ -72,6 +73,13 @@ class EmployeeController extends Controller
                 $imageUrl = $uploadPath . $imageName;
                 $file->move($uploadPath, $imageName);
                 $image = $imageUrl;
+            }
+
+            if( !Position::where('added_by', $added_by)->where('position', trim($request->position))->exists() ){
+                Position::create([
+                    "position" => trim($request->position),
+                    "added_by" => $added_by,
+                ]);
             }
 
             $employee = Employee::create([

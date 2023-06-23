@@ -216,6 +216,7 @@ class SuperAdminController extends Controller
                                     'state',
                                     'country',
                                     'postal_code',
+                                    DB::raw("DATE_FORMAT(created_at, '%d-%m-%Y') AS created_at"),
                                 )
                     ->where('is_deleted', 0)
                     ->where('is_master', 0)
