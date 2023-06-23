@@ -72,6 +72,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // });
     Route::group(['prefix'=>'admin'],function(){
         Route::post('/logoutAdmin', [AuthController::class, 'logoutAdmin']);
+        Route::get('/getDashboardTotals', [SuperAdminController::class, 'dashboardWidgetCounts']);
         Route::post('/addAdmin', [SuperAdminController::class, 'addAdmin']);
         Route::post('/updateAdmin/{id}', [SuperAdminController::class, 'updateAdmin']);
         Route::post('/updateAdminPassword', [SuperAdminController::class, 'updateAdminPassword']);
