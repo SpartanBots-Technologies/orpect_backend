@@ -803,7 +803,12 @@ class EmployeeController extends Controller
                 $file->move($uploadPath, $imageName);
                 $image = $imageUrl;
             }
-
+            if( isset($request->position) && trim($request->position) != "" && !Position::where('added_by', $added_by)->where('position', trim($request->position))->exists() ){
+                Position::create([
+                    "position" => trim($request->position),
+                    "added_by" => $added_by,
+                ]);
+            }
             $rating = ( $request->performanceRating + $request->professionalSkillsRating
                     + $request->teamworkCommunicationRating + $request->attitudeBehaviourRating ) / 4;
 
