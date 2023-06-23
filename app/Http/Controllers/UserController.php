@@ -296,9 +296,29 @@ class UserController extends Controller
         $company = User::where('id', $id)
                     ->where('is_deleted', 0)
                     ->first();
+        $totalCurrentEmp = Employee::where('added_by', '=', $id)
+                    ->where('ex_employee', '=', 0)
+                    ->where('non_joiner', '=', 0)
+                    ->where('is_deleted', '=', 0)
+                    ->count();
+        $totalExEmp = Employee::where('added_by', '=', $id)
+                    ->where('ex_employee', '=', 1)
+                    ->where('non_joiner', '=', 0)
+                    ->where('is_deleted', '=', 0)
+                    ->count();
+        $totalNonJoiner = Employee::where('added_by', '=', $id)
+                    ->where('ex_employee', '=', 0)
+                    ->where('non_joiner', '=', 1)
+                    ->where('is_deleted', '=', 0)
+                    ->count();
+        $totalSubmittedReview = $totalExEmp + $totalNonJoiner;
         if($company){
             return response()->json([
                 'status' => true,
+                'totalCurrentEmp' => $totalCurrentEmp,
+                'totalExEmp' => $totalExEmp,
+                'totalNonJoiner' => $totalNonJoiner,
+                'totalSubmittedReview' => $totalSubmittedReview,
                 'company' => $company,
             ], 200);
         }else{
