@@ -293,4 +293,22 @@ class SuperAdminController extends Controller
         }
     }
 
+    public function dashboardWidgetCounts(){
+        $totalCompanies = User::where('is_deleted', 0)
+                            ->where('is_account_verified', 1)
+                            ->count();;
+        $pendingRequests = User::where('is_account_verified', 0)
+                            ->where('is_deleted', 0)
+                            ->count();
+        $totalAdmins = SuperAdmin::where('is_deleted', 0)
+                            ->where('is_master', 0)
+                            ->count();
+        return response()->json([
+            'status' => true,
+            'totalCompanies' => $totalCompanies,
+            'pendingRequests' => $pendingRequests,
+            'totalAdmins' => $totalAdmins,
+        ], 200);
+    }
+
 }
