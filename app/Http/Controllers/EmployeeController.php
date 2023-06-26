@@ -1051,6 +1051,7 @@ class EmployeeController extends Controller
                 $empReviewForAdmin = Employee::select(
                         'employees.id',
                         'employees.emp_name',
+                        'employees.email',
                         'employees.phone',
                         'employees.profile_image',
                         'employees.ex_employee',

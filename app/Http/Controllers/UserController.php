@@ -376,6 +376,33 @@ class UserController extends Controller
         }
     }
 
+    public function rejectCompany(String $id){
+        $companydetails = User::find($id);
+        if($companydetails){
+            $useremail = $companydetails->email;
+            $companydetails->delete();
+            $data = [
+                'CompanyName' => 'Orpect',
+            ];
+            try{ 
+                Mail::send('auth.rejectAccount', ['data' => $data], function ($message) use ($useremail){
+                    $message->from('testspartanbots@gmail.com', 'Orpect');
+                    $message->to($useremail)->subject('ORPECT - Registration Request Declined'); 
+                });
+            } catch(\Exception $e){
+            }
+            return response()->json([
+                'status' => true,
+                'messsage' => "Company registration request declined",
+            ], 200);
+        }else{
+            return response()->json([
+                'status' => false,
+                'message' => "Company doesn't exists",
+            ], 404);
+        }
+    }
+
     public function getPendingVerificationRequests(){
         $companydetails = User::select(
                                         'id',
