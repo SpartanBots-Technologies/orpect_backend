@@ -29,6 +29,7 @@ class Employee extends Model
             'city',
             'country',
             'state',
+            'postal_code',
             'linked_in',
             'status_changed_at',
             'overall_rating',
