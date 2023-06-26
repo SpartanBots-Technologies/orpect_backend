@@ -545,6 +545,16 @@ class EmployeeController extends Controller
         }
     }
 
+    public function getEmployeeByIdForAdmin(string $id){
+        $employeeDetail = Employee::where('is_deleted', '=', 0)
+                                ->where('id', '=', $id)
+                                ->get();
+        return response()->json([
+            'status' => true,
+            'employee' => $employeeDetail,
+        ], 200);
+    }
+
     public function deleteEmployee(string $id){
         $employee = Employee::find($id);
         if ($employee) {
@@ -1034,4 +1044,73 @@ class EmployeeController extends Controller
         ], 200);
     }
 
+    public function getEmpReviewForAdmin(String $id){
+        try{
+            $employee = Employee::where('id', '=', $id)->first();
+            if($employee) {
+                $empReviewForAdmin = Employee::select(
+                        'employees.id',
+                        'employees.emp_name',
+                        'employees.phone',
+                        'employees.profile_image',
+                        'employees.ex_employee',
+                        'employees.non_joiner',
+                        'employees.overall_rating',
+                        'employees.performance_rating',
+                        'employees.professional_skills_rating',
+                        'employees.teamwork_communication_rating',
+                        'employees.attitude_behaviour_rating',
+                        'employees.review',
+                        DB::raw("
+                            CASE
+                                WHEN employees.ex_employee = 1 AND employees.non_joiner = 0 THEN 'Ex Employee'
+                                WHEN employees.ex_employee = 0 AND employees.non_joiner = 1 THEN 'Non Joiner'
+                                WHEN employees.ex_employee = 0 AND employees.non_joiner = 0 THEN 'Current Employee'
+                                ELSE 'Unknown'
+                            END AS employee_type
+                        "),
+                        'employees.linked_in',
+                        'users.company_name',
+                        'users.email AS company_email',
+                        'users.company_phone AS company_phone',
+                        'users.image AS company_logo',
+                        'users.domain_name AS company_domain',
+                        DB::raw("DATE_FORMAT(employees.created_at, '%d-%m-%Y') AS added_on"),
+                        DB::raw("DATE_FORMAT(employees.status_changed_at, '%d-%m-%Y') AS last_review_on"),
+                        'employees.last_CTC',
+                        DB::raw("DATE_FORMAT(employees.date_of_joining, '%d-%m-%Y') AS date_of_joining"),
+                        DB::raw("DATE_FORMAT(employees.date_of_leaving, '%d-%m-%Y') AS date_of_leaving"),
+                    )
+                    ->join('users', 'employees.added_by', '=', 'users.id')
+                    ->where('employees.is_deleted', 0)
+                    ->where(function ($query) use ($employee) {
+                        if ($employee->emp_pan != null && $employee->emp_pan != '') {
+                            $query->where('employees.emp_pan', $employee->emp_pan)
+                                ->orWhere('employees.phone', $employee->phone)
+                                ->orWhere('employees.email', $employee->email);
+                        } else {
+                            $query->where('employees.phone', $employee->phone)
+                                ->orWhere('employees.email', $employee->email);
+                        }
+                    })
+                    ->where(function ($query) {
+                        $query->where('employees.ex_employee', 1)
+                            ->orWhere('employees.non_joiner', 1);
+                    })
+                    ->paginate(5);
+                return response()->json([
+                    'status' => true,
+                    'taken_membership' => 1,
+                    'reviews' => $empReviewForAdmin,
+                ], 200);
+            }else {
+                return response()->json([
+                    'status' => false,
+                    'message' => "No record found",
+                ], 404);
+            }
+        } catch(\Exception $e){
+            return response()->json([ 'status' => false, 'message' => "Some error occured", ], 400);
+        }
+    }
 }
