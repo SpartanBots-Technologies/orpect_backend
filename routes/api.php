@@ -85,10 +85,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/getEmployeeById/{id}', [EmployeeController::class, 'getEmployeeByIdForAdmin']);
         Route::get('/getExEmployees', [EmployeeController::class, 'getExEmployees']);
         Route::get('/getNonJoiners', [EmployeeController::class, 'getNonJoiners']);
+        Route::delete('/deleteEmployeeByAdmin/{id}', [EmployeeController::class, 'deleteEmployee']);
 
         Route::get('/getCompanies', [UserController::class, 'getCompanies']);
         Route::get('/getCompanyById/{id}', [UserController::class, 'getCompanyById']);
         Route::delete('/deleteCompany/{id}', [UserController::class, 'deleteCompany']);
+        Route::delete('/rejectCompany/{id}', [UserController::class, 'rejectCompany']);
         Route::post('/verifyCompany/{id}', [UserController::class, 'verifyCompany']);
         Route::get('/getPendingVerificationRequests', [UserController::class, 'getPendingVerificationRequests']);
     });
