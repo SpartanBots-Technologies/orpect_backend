@@ -15,17 +15,89 @@ use Illuminate\Http\Request;
 class SuperAdminController extends Controller
 {
 
+    public function updateProfileAdmin(Request $request){
+        $inputValidation = Validator::make($request->all(), [
+            "fullname" => 'required',
+            "phone" => 'required|regex:/^[0-9]{10}$/',
+            'image' => $request->image ? 'file|mimes:jpg,jpeg,png|max:2048' : '',
+        ]);
+        if($inputValidation->fails()){
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid data entered',
+                'errors' => $inputValidation->errors(),
+            ], 422);
+        }
+        $id = Auth::guard('admin')->user()->id;
+
+        if( ( $request->phone != Auth::guard('admin')->user()->phone ) && 
+            SuperAdmin::where('phone', $request->phone)->exists()){
+                return response()->json([
+                    'status' => false, 'message' => 'Phone number already exists',
+                ], 422);
+        }
+        try{
+            $adminDetails = SuperAdmin::where('id', $id)->first();
+            $image = null;
+            $oldImage = $request->oldImageName != "" ? $request->oldImageName : null;
+
+            if($request->hasFile('image')){
+                $randomNumber = random_int(1000, 9999);
+                $file = $request->image;
+                $date = date('YmdHis');
+                $filename = "IMG_" . $randomNumber . "_" . $date;
+                $extension = strtolower( $file->getClientOriginalExtension() );
+                $imageName = $filename . '.' . $extension;
+                $uploadPath = "uploads/admins/profile_images/";
+                $imageUrl = $uploadPath . $imageName;
+                $file->move($uploadPath, $imageName);
+                $image = $imageUrl;
+                if($oldImage != "" && File::exists($oldImage)){
+                    File::delete($oldImage);
+                }
+            }else{
+                $image = $oldImage;
+            }
+
+            $adminUpdated = $adminDetails->update([
+                'fullname' => $request->fullname,
+                'phone' => $request->phone,
+                'image' => $image,
+                'address' => $request->address != "" ? $request->address : null,
+                'city' => $request->city != "" ? $request->city : null,
+                'country' => $request->country != "" ? $request->country : null,
+                'state' => $request->state != "" ? $request->state : null,
+                'postal_code' => $request->postalCode != "" ? $request->postalCode : null,
+            ]);
+            if($adminUpdated){
+                return response()->json([
+                    'status' => true,
+                    'message' => "updated successfully",
+                ], 200);
+            }
+            return response()->json([
+                'status' => false,
+                'message' => "some error occured",
+            ], 400);
+        }catch(\Exception $e){
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
     public function addAdmin(Request $request){
         $inputValidation = Validator::make($request->all(), [
             "fullname" => 'required',
             "email" => 'required|email|unique:super_admins,email',
             "password" => 'required|confirmed',
             "phone" => 'required|regex:/^[0-9]{10}$/|unique:super_admins,phone',
-            "address" => 'required',
-            "city" => 'required',
-            "state" => 'required',
-            "country" => 'required',
-            "postalCode" => 'required',
+            // "address" => 'required',
+            // "city" => 'required',
+            // "state" => 'required',
+            // "country" => 'required',
+            // "postalCode" => 'required',
             'image' => 'sometimes|file|mimes:jpg,jpeg,png|max:2048',
         ]);
         if($inputValidation->fails()){
@@ -57,11 +129,11 @@ class SuperAdminController extends Controller
                 'phone' => $request->phone,
                 'password' => Hash::make($request->password),
                 'image' => $image,
-                'address' => $request->address,
-                'city' => $request->city,
-                'country' => $request->country,
-                'state' => $request->state,
-                'postal_code' => $request->postalCode,
+                'address' => $request->address != "" ? $request->address : null,
+                'city' => $request->city != "" ? $request->city : null,
+                'country' => $request->country != "" ? $request->country : null,
+                'state' => $request->state != "" ? $request->state : null,
+                'postal_code' => $request->postalCode != "" ? $request->postalCode : null,
                 'is_master' => 0,
             ]);
             if($adminCreated){
@@ -87,11 +159,11 @@ class SuperAdminController extends Controller
             "fullname" => 'required',
             "email" => 'required|email',
             "phone" => 'required|regex:/^[0-9]{10}$/',
-            "address" => 'required',
-            "city" => 'required',
-            "state" => 'required',
-            "country" => 'required',
-            "postalCode" => 'required',
+            // "address" => 'required',
+            // "city" => 'required',
+            // "state" => 'required',
+            // "country" => 'required',
+            // "postalCode" => 'required',
             'image' => 'sometimes|file|mimes:jpg,jpeg,png|max:2048',
         ]);
         if($inputValidation->fails()){
@@ -141,11 +213,11 @@ class SuperAdminController extends Controller
                 'email' => $request->email,
                 'phone' => $request->phone,
                 'image' => $image,
-                'address' => $request->address,
-                'city' => $request->city,
-                'country' => $request->country,
-                'state' => $request->state,
-                'postal_code' => $request->postalCode,
+                'address' => $request->address != "" ? $request->address : null,
+                'city' => $request->city != "" ? $request->city : null,
+                'country' => $request->country != "" ? $request->country : null,
+                'state' => $request->state != "" ? $request->state : null,
+                'postal_code' => $request->postalCode != "" ? $request->postalCode : null,
             ]);
             if($adminCreated){
                 return response()->json([
