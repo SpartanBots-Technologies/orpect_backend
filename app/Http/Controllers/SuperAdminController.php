@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 use App\Models\User;
 use App\Models\SuperAdmin;
+use App\Models\Employee;
 
 use Illuminate\Http\Request;
 
@@ -335,6 +336,22 @@ class SuperAdminController extends Controller
         }
     }
 
+    public function deleteAdmin(String $id){
+        $admin = SuperAdmin::find($id);
+        if($admin){
+            $admin->delete();
+            return response()->json([
+                'status' => true,
+                'message' => "Successfully deleted",
+            ], 200);
+        }else{
+            return response()->json([
+                'status' => false,
+                'message' => "No record Found",
+            ], 404);
+        }
+    }
+
     public function getDesignations(){
         $designations = DB::table('designations')->select('id', 'designation')->get();
         if($designations){
@@ -380,6 +397,41 @@ class SuperAdminController extends Controller
             'totalCompanies' => $totalCompanies,
             'pendingRequests' => $pendingRequests,
             'totalAdmins' => $totalAdmins,
+        ], 200);
+    }
+
+    public function searchGloballyAdmin(Request $request){
+        $searchText = $request->searchText;
+        $filter = $request->filter == 'emp' ? 'emp' : 'org';
+        if($filter == 'emp'){
+            $query = Employee::where('is_deleted', '=', 0);
+
+            if (!empty($searchText)) {
+                $query->where(function ($query) use ($searchText) {
+                    $query->where('emp_name', 'LIKE', "%$searchText%")
+                        ->orWhere('emp_pan', 'LIKE', "%$searchText%")
+                        ->orWhere('email', 'LIKE', "%$searchText%");
+                });
+            }
+
+            $searchedResult = $query->orderBy('created_at', 'desc')
+            ->paginate(10);
+        }else{
+            $query = User::where('is_deleted', '=', 0)
+                        ->where('is_account_verified', '=', 1);
+            if (!empty($searchText)) {
+                $query->where(function ($query) use ($searchText) {
+                    $query->where('company_name', 'LIKE', "%$searchText%")
+                        ->orWhere('domain_name', 'LIKE', "%$searchText%");
+                });
+            }
+            $searchedResult = $query
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+        }
+        return response()->json([
+            'status' => true,
+            'searchResult' => $searchedResult,
         ], 200);
     }
 

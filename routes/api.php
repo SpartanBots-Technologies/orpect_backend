@@ -72,6 +72,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // });
     Route::group(['prefix'=>'admin'],function(){
         Route::post('/logoutAdmin', [AuthController::class, 'logoutAdmin']);
+        Route::get('/searchGloballyAdmin', [SuperAdminController::class, 'searchGloballyAdmin']);
         Route::get('/getDashboardTotals', [SuperAdminController::class, 'dashboardWidgetCounts']);
         Route::post('/updateProfileAdmin', [SuperAdminController::class, 'updateProfileAdmin']);
         Route::post('/addAdmin', [SuperAdminController::class, 'addAdmin']);
@@ -79,6 +80,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/updateAdminPassword', [SuperAdminController::class, 'updateAdminPassword']);
         Route::get('/getAllAdmins', [SuperAdminController::class, 'getAllAdmins']);
         Route::get('/getAdminById/{id}', [SuperAdminController::class, 'getAdminById']);
+        Route::delete('/deleteAdmin/{id}', [SuperAdminController::class, 'deleteAdmin']);
         
         Route::get('/getEmpReviewForAdmin/{id}', [EmployeeController::class, 'getEmpReviewForAdmin']);
         Route::get('/getCurrentEmployees', [EmployeeController::class, 'getCurrentEmployees']);
