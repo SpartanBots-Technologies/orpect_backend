@@ -16,6 +16,7 @@ use App\Models\PasswordReset;
 use App\Models\EmailVerification;
 use App\Models\Position;
 use App\Models\SuperAdmin;
+use App\Models\SupportEmail;
 
 class AuthController extends Controller
 {
@@ -597,5 +598,51 @@ class AuthController extends Controller
                 'message' => $e->getMessage(),
             ], 400);
         }
+    }
+
+    public function sendSupportMail(Request $request){
+        $inputValidation = Validator::make($request->all(), [
+            "name" => 'required',
+            "email" => 'required|email:filter',
+            "message" => 'required',
+        ]);
+        if($inputValidation->fails()){
+            return response()->json([
+                'message' => 'Invalid data entered',
+                'errors' => $inputValidation->errors(),
+            ], 422);
+        }
+
+        try{
+            SupportEmail::create([
+                "name" => $request->name,
+                "email" => $request->email,
+                "subject" => $request->subject != "" ? $request->subject : null,
+                "message" => $request->message,
+            ]);
+
+            $data = [
+                'name' => $request->name,
+                'email' => $request->email,
+                'subject' => $request->subject != "" ? $request->subject : "",
+                'message' => $request->message,
+            ];
+            $useremail = "support@orpect.com";
+            Mail::send('auth.supportEmail', ['data' => $data], function ($message) use ($useremail){
+                $message->from('testspartanbots@gmail.com', 'Orpect');
+                $message->to($useremail)->subject('ORPECT - Support Email');
+            });
+
+            return response()->json([
+                'status' => true,
+                'message' => "Message sent successfully",
+            ], 200);
+        }catch(\Exception $e){
+            return response()->json([
+                'status' => false,
+                'message' => "Something went wrong",
+            ], 400);
+        }
+
     }
 }
