@@ -16,6 +16,23 @@ use Illuminate\Http\Request;
 class SuperAdminController extends Controller
 {
 
+    public function getAdmin(){
+        $currentAdmin = SuperAdmin::where('is_deleted', 0)
+                    ->where('id', Auth::guard('admin')->user()->id)
+                    ->first();
+        if($currentAdmin){
+            return response()->json([
+                'status' => true,
+                'admin' => $currentAdmin,
+            ], 200);
+        }else{
+            return response()->json([
+                'status' => false,
+                'message' => "Admin not found",
+            ], 404);
+        }
+    }
+
     public function updateProfileAdmin(Request $request){
         $inputValidation = Validator::make($request->all(), [
             "fullname" => 'required',
@@ -74,6 +91,7 @@ class SuperAdminController extends Controller
                 return response()->json([
                     'status' => true,
                     'message' => "updated successfully",
+                    'updatedAdmin' => $adminUpdated,
                 ], 200);
             }
             return response()->json([
@@ -254,9 +272,9 @@ class SuperAdminController extends Controller
             return response()->json([ 'status' => false, 'message' => "Old and New passwords are same. Please enter different password", ], 422);
         }
         try{
-            $user = User::select('password')->find( Auth::guard('admin')->user()->id );
-            if( Hash::check($request->oldPassword, $user->password) ){
-                $user->update([
+            $admin = SuperAdmin::select('password')->find( Auth::guard('admin')->user()->id );
+            if( Hash::check($request->oldPassword, $admin->password) ){
+                $admin->update([
                     'password' => Hash::make($request->newPassword)
                 ]);
                 return response()->json([
@@ -267,6 +285,53 @@ class SuperAdminController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => "Old Password does not match",
+                ], 400);
+            }
+        }catch(\Exception $e){
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    public function updateSubAdminPassword(Request $request, String $id){
+        $inputValidation = Validator::make($request->all(), [
+            "oldPassword" => 'required',
+            "newPassword" => 'required|confirmed'
+        ]);
+        if($inputValidation->fails()){
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid data entered',
+                'errors' => $inputValidation->errors(),
+            ], 422);
+        }
+        if($request->oldPassword == $request->newPassword){
+            return response()->json([ 'status' => false, 'message' => "Old and New passwords are same. Please enter different password", ], 422);
+        }
+        try{
+            $adminIsMaster = SuperAdmin::find( Auth::guard('admin')->user()->id )->value('is_master');
+            if($adminIsMaster){
+                $subAdmin = SuperAdmin::find( $id );
+                if( $subAdmin && Hash::check($request->oldPassword, $subAdmin->password) ){
+                    $updated = $subAdmin->update([
+                        'password' => Hash::make($request->newPassword)
+                    ]);
+                    return response()->json([
+                        'status' => true,
+                        'message' => "Password updated successfully",
+                    ], 200);
+                }else{
+                    return response()->json([
+                        'status' => false,
+                        'message' => "Old Password does not match",
+                    ], 400);
+                }
+            }else{
+                return response()->json([
+                    'status' => false,
+                    'message' => "You are not authorized to change admin's password",
                 ], 400);
             }
         }catch(\Exception $e){
@@ -321,6 +386,7 @@ class SuperAdminController extends Controller
                                     'postal_code',
                                     )
                 ->where('id', $id)
+                ->where('is_master', 0)
                 ->where('is_deleted', 0)
                 ->first();
         if($admin){
