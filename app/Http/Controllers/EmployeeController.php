@@ -688,11 +688,20 @@ class EmployeeController extends Controller
     public function searchEmployeeGlobally(Request $request){
         $searchText = $request->searchText;
         $emp = $request->input('emp', '');
+        $userTakenMem = Auth::user()->taken_membership;
         $employeesQuery = Employee::select(
             'employees.id',
             'employees.emp_name',
-            'employees.email',
-            'employees.phone',
+            DB::raw("CASE
+                WHEN " . $userTakenMem . " = 0 THEN CONCAT(LCASE(SUBSTRING(employees.emp_name, 1, 2)), 'XXXX@XXXil.com')
+                ELSE employees.email
+                END AS email"
+            ),
+            DB::raw("CASE
+                WHEN " . $userTakenMem . " = 0 THEN CONCAT(SUBSTRING(employees.phone, 1, 2), '******', SUBSTRING(employees.phone, 9, 10))
+                ELSE employees.phone
+                END AS phone"
+            ),
             'employees.profile_image',
             'employees.ex_employee',
             'employees.non_joiner',
@@ -710,9 +719,13 @@ class EmployeeController extends Controller
             'employees.teamwork_communication_rating',
             'employees.attitude_behaviour_rating',
             DB::raw("DATE_FORMAT(employees.created_at, '%d-%m-%Y') AS added_on"),
-            DB::raw("DATE_FORMAT(status_changed_at, '%d-%m-%Y') AS last_review_on"),
+            DB::raw("DATE_FORMAT(employees.status_changed_at, '%d-%m-%Y') AS last_review_on"),
             'employees.linked_in',
-            'users.company_name',
+            DB::raw("CASE
+                WHEN " . $userTakenMem . " = 0 THEN 'XXXXXXX XXXXXXX'
+                ELSE users.company_name
+                END AS company_name"
+            ),
             DB::raw('(SELECT COUNT(*) FROM employees AS e2 WHERE (e2.phone = employees.phone OR e2.email = employees.email OR e2.emp_pan = employees.emp_pan)) AS total_reviews'),
         )
         ->join('users', 'users.id', '=', 'employees.added_by') // Joined `users` table
@@ -906,8 +919,12 @@ class EmployeeController extends Controller
                     $particularEmployee = Employee::select(
                         'id',
                         'emp_name',
-                        'email',
-                        'phone',
+                        DB::raw("CONCAT(LCASE(SUBSTRING(emp_name, 1, 2)), 'XXXX@XXXil.com')
+                            AS email"
+                        ),
+                        DB::raw("CONCAT(SUBSTRING(phone, 1, 2), '******', SUBSTRING(phone, 9, 10))
+                            AS phone"
+                        ),
                         'profile_image',
                         'ex_employee',
                         'non_joiner',

@@ -338,7 +338,7 @@ class UserController extends Controller
                 ]);
                 return response()->json([ 'status' => true, 'message' => "successfully deleted", ], 200);
             }catch(\Exception $e){
-                dd($e);
+                return response()->json([ 'status' => false, 'message' => $e, ], 400);
             }
         }else{
             return response()->json([ 'status' => false, 'message' => "Some error occured", ], 400);
