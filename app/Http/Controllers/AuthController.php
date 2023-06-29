@@ -83,7 +83,6 @@ class AuthController extends Controller
     }
 
     public function checkOtp(Request $request){
-        // dd($request->all());
         $inputValidation = Validator::make($request->all(), [
             "email" => 'required|email',
             "otp" => 'required',
@@ -620,7 +619,8 @@ class AuthController extends Controller
                 "subject" => $request->subject != "" ? $request->subject : null,
                 "message" => $request->message,
             ]);
-
+            $senderName = $request->name;
+            $senderEmail = $request->email;
             $data = [
                 'name' => $request->name,
                 'email' => $request->email,
@@ -629,8 +629,9 @@ class AuthController extends Controller
             ];
             $useremail = "support@orpect.com";
             Mail::send('auth.supportEmail', ['data' => $data], function ($message) use ($useremail){
-                $message->from('testspartanbots@gmail.com', 'Orpect');
+                $message->from('vikas@spartanbots.com', 'Vikas');
                 $message->to($useremail)->subject('ORPECT - Support Email');
+                $message->replyTo('vikas@spartanbots.com', 'Vikas');
             });
 
             return response()->json([
