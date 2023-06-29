@@ -208,7 +208,7 @@ class AuthController extends Controller
                 'message' => "Invalid OTP",
             ], 422);
         }
-        $positionArr = ['Developer', 'Designer', 'Tester'];
+        $positionArr = ['General Manager', 'HR Manager', 'HR Executive', 'Project Manager', 'Sales Manager', 'Account Manager', 'Marketing Coordinator', 'Customer Service Representative', 'Administrative Assistant', 'Analyst', 'Product Manager', 'Operations Coordinator', 'Receptionist'];
         $user = User::create([
             "company_name" => $request->companyName,
             "company_type" => $request->companyType,
