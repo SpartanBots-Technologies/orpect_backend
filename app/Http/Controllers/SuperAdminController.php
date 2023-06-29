@@ -88,10 +88,11 @@ class SuperAdminController extends Controller
                 'postal_code' => $request->postalCode != "" ? $request->postalCode : null,
             ]);
             if($adminUpdated){
+                $updatedAdmin = SuperAdmin::find($id);
                 return response()->json([
                     'status' => true,
                     'message' => "updated successfully",
-                    'updatedAdmin' => $adminUpdated,
+                    'updatedAdmin' => $updatedAdmin,
                 ], 200);
             }
             return response()->json([
@@ -272,8 +273,8 @@ class SuperAdminController extends Controller
             return response()->json([ 'status' => false, 'message' => "Old and New passwords are same. Please enter different password", ], 422);
         }
         try{
-            $admin = SuperAdmin::select('password')->find( Auth::guard('admin')->user()->id );
-            if( Hash::check($request->oldPassword, $admin->password) ){
+            $admin = SuperAdmin::find( Auth::guard('admin')->user()->id );
+            if( $admin && Hash::check($request->oldPassword, $admin->password) ){
                 $admin->update([
                     'password' => Hash::make($request->newPassword)
                 ]);
@@ -315,7 +316,7 @@ class SuperAdminController extends Controller
             if($adminIsMaster){
                 $subAdmin = SuperAdmin::find( $id );
                 if( $subAdmin && Hash::check($request->oldPassword, $subAdmin->password) ){
-                    $updated = $subAdmin->update([
+                    $subAdmin->update([
                         'password' => Hash::make($request->newPassword)
                     ]);
                     return response()->json([

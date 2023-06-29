@@ -613,25 +613,26 @@ class AuthController extends Controller
         }
 
         try{
+            $senderName = $request->name;
+            $senderEmail = $request->email;
             SupportEmail::create([
-                "name" => $request->name,
-                "email" => $request->email,
+                "name" => $senderName,
+                "email" => $senderEmail,
                 "subject" => $request->subject != "" ? $request->subject : null,
                 "message" => $request->message,
             ]);
-            $senderName = $request->name;
-            $senderEmail = $request->email;
+
             $data = [
-                'name' => $request->name,
-                'email' => $request->email,
+                'name' => $senderName,
+                'email' => $senderEmail,
                 'subject' => $request->subject != "" ? $request->subject : "",
                 'message' => $request->message,
             ];
             $useremail = "support@orpect.com";
-            Mail::send('auth.supportEmail', ['data' => $data], function ($message) use ($useremail){
-                $message->from('vikas@spartanbots.com', 'Vikas');
+            Mail::send('auth.supportEmail', ['data' => $data], function ($message) use ($useremail, $senderName, $senderEmail){
+                $message->from($senderEmail, $senderName . ' via ORPECT');
                 $message->to($useremail)->subject('ORPECT - Support Email');
-                $message->replyTo('vikas@spartanbots.com', 'Vikas');
+                $message->replyTo($senderEmail, $senderName);
             });
 
             return response()->json([
