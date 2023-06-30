@@ -327,8 +327,11 @@ class EmployeeController extends Controller
                 $linked_in = $data[21];
                 $lastCTC = $data[22];
                 $emp_image = $data[23];
-
-                if ( $emp_name != "" && $emp_email != "" && $emp_phone != "") {
+                $validator = Validator::make(['email' => $emp_email, 'phone' => $emp_phone,], [
+                    'email' => 'required|email:filter',
+                    'phone' => 'required|regex:/^[0-9]{10}$/',
+                ]);
+                if ( $emp_name != "" && $emp_email != "" && $emp_phone != "" && !$validator->fails()) {
                     $errorMsg = "";
                     $cnt = 0;
                     if($non_joiner != 1 && $emp_id == ""){
@@ -450,7 +453,7 @@ class EmployeeController extends Controller
                             "emp_name" => $emp_name,
                             "email" => $emp_email,
                             "phone" => $emp_phone,
-                            "message" => $errorMsg . ' already exists',
+                            "message" => $errorMsg . ' already exists or validation error',
                         ];
                         $dataUnableToInsert[] = $dataError;
                     }
@@ -461,7 +464,7 @@ class EmployeeController extends Controller
                         "emp_name" => $emp_name,
                         "email" => $emp_email,
                         "phone" => $emp_phone,
-                        "message" => "Any of these four fields are missing",
+                        "message" => "Any of these four fields are missing or validation error",
                     ];
                     $dataUnableToInsert[] = $dataError;
                 }
@@ -693,7 +696,7 @@ class EmployeeController extends Controller
             'employees.id',
             'employees.emp_name',
             DB::raw("CASE
-                WHEN " . $userTakenMem . " = 0 THEN CONCAT(LCASE(SUBSTRING(employees.emp_name, 1, 2)), 'XXXX@XXXil.com')
+                WHEN " . $userTakenMem . " = 0 THEN LCASE(CONCAT(SUBSTRING(employees.emp_name, 1, 2), 'XXXX@XXXil.com'))
                 ELSE employees.email
                 END AS email"
             ),
@@ -919,7 +922,7 @@ class EmployeeController extends Controller
                     $particularEmployee = Employee::select(
                         'id',
                         'emp_name',
-                        DB::raw("CONCAT(LCASE(SUBSTRING(emp_name, 1, 2)), 'XXXX@XXXil.com')
+                        DB::raw("LCASE(CONCAT(SUBSTRING(emp_name, 1, 2), 'XXXX@XXXil.com'))
                             AS email"
                         ),
                         DB::raw("CONCAT(SUBSTRING(phone, 1, 2), '******', SUBSTRING(phone, 9, 10))
@@ -948,6 +951,11 @@ class EmployeeController extends Controller
                         'last_CTC',
                         DB::raw("DATE_FORMAT(date_of_joining, '%d-%m-%Y') AS date_of_joining"),
                         DB::raw("DATE_FORMAT(date_of_leaving, '%d-%m-%Y') AS date_of_leaving"),
+                        DB::raw("'XXXXXXX XXXXXXX' AS company_name"),
+                        DB::raw("'99******99' AS company_phone"),
+                        DB::raw("'xxx.xxxxxxxxxxx.xxx' AS domain_name"),
+                        DB::raw("'xxxxxx@xxxxxxxx.xxx' AS company_email"),
+                        DB::raw("'uploads/app/images/orpect1.png' AS company_logo"),
                     )
                     ->where('is_deleted', 0)
                     ->where(function ($query) use ($employee) {
