@@ -359,7 +359,7 @@ class UserController extends Controller
             ];
             try{ 
                 Mail::send('auth.accountVerified', ['data' => $data], function ($message) use ($useremail){
-                    $message->from('testspartanbots@gmail.com', 'Orpect');
+                    $message->from('support@orpect.com', 'ORPECT');
                     $message->to($useremail)->subject('ORPECT - Account Verified'); 
                 });
             } catch(\Exception $e){
@@ -386,7 +386,7 @@ class UserController extends Controller
             ];
             try{ 
                 Mail::send('auth.rejectAccount', ['data' => $data], function ($message) use ($useremail){
-                    $message->from('testspartanbots@gmail.com', 'Orpect');
+                    $message->from('support@orpect.com', 'ORPECT');
                     $message->to($useremail)->subject('ORPECT - Registration Request Declined'); 
                 });
             } catch(\Exception $e){

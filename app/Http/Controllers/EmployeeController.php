@@ -97,6 +97,7 @@ class EmployeeController extends Controller
                 'city' => $request->city ?? null,
                 'country' => $request->country ?? null,
                 'state' => $request->state ?? null,
+                'postal_code' => $request->postalCode ?? null,
                 'linked_in' => $request->linkedIn ?? null,
             ]);
             if($employee) {
@@ -177,6 +178,7 @@ class EmployeeController extends Controller
                 'city' => $request->city ?? null,
                 'country' => $request->country ?? null,
                 'state' => $request->state ?? null,
+                'postal_code' => $request->postalCode ?? null,
                 'linked_in' => $request->linkedIn ?? null,
             ]);
             if($employee) {
@@ -849,10 +851,11 @@ class EmployeeController extends Controller
                 'added_by' => $added_by,
                 'date_of_birth' => $request->dateOfBirth,
                 'emp_pan' => $request->pan_number ?? null,
-                'permanent_address' => $request->permanentAddress,
-                'city' => $request->city,
-                'country' => $request->country,
-                'state' => $request->state,
+                'permanent_address' => $request->permanentAddress ?? null,
+                'city' => $request->city ?? null,
+                'country' => $request->country ?? null,
+                'state' => $request->state ?? null,
+                'postal_code' => $request->postalCode ?? null,
                 'linked_in' => $request->linkedIn,
                 'ex_employee' => $request->exEmployee,
                 'non_joiner' => $request->nonJoiner,

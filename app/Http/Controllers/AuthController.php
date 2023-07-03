@@ -69,7 +69,7 @@ class AuthController extends Controller
 
         if( 
             Mail::send('auth.OtpEmail', ['data' => $data], function ($message) use ($useremail){
-            $message->from('testspartanbots@gmail.com', 'Orpect');
+            $message->from('support@orpect.com', 'ORPECT');
             $message->to($useremail)->subject('ORPECT - Email Verification OTP'); }) 
         ){
             return response()->json([
@@ -243,7 +243,7 @@ class AuthController extends Controller
         ];
         try{ 
             Mail::send('auth.underVerification', ['data' => $data], function ($message) use ($useremail){
-                $message->from('testspartanbots@gmail.com', 'Orpect');
+                $message->from('support@orpect.com', 'ORPECT');
                 $message->to($useremail)->subject('ORPECT - Registration successful. Account under verification'); 
             });
         } catch(\Exception $e){
@@ -342,7 +342,7 @@ class AuthController extends Controller
             ];
 
             Mail::send('auth.forgotPassEmailTemp', ['data' => $data], function ($message) use ($useremail){
-                $message->from('testspartanbots@gmail.com', 'Orpect');
+                $message->from('support@orpect.com', 'ORPECT');
                 $message->to($useremail)->subject('ORPECT - Password Reset');
             });
 
@@ -525,7 +525,7 @@ class AuthController extends Controller
             ];
 
             Mail::send('auth.forgotPassEmailTemp', ['data' => $data], function ($message) use ($useremail){
-                $message->from('testspartanbots@gmail.com', 'Orpect');
+                $message->from('support@orpect.com', 'ORPECT');
                 $message->to($useremail)->subject('ORPECT - Password Reset');
             });
 
@@ -630,7 +630,7 @@ class AuthController extends Controller
             ];
             $useremail = "support@orpect.com";
             Mail::send('auth.supportEmail', ['data' => $data], function ($message) use ($useremail, $senderName, $senderEmail){
-                $message->from($senderEmail, $senderName . ' via ORPECT');
+                $message->from('support@orpect.com', $senderName . ' via ORPECT');
                 $message->to($useremail)->subject('ORPECT - Support Email');
                 $message->replyTo($senderEmail, $senderName);
             });
