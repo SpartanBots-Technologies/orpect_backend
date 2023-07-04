@@ -129,6 +129,7 @@ class EmployeeController extends Controller
             "dateOfJoining" => $request->nonjoiner != 1 ? 'date' : '',
             'pan_number' => $request->nonjoiner != 1 ? 'required' : '',
             'linkedIn' => $request->linkedIn ? 'url' : '',
+            'image' => $request->image ? 'file|mimes:jpg,jpeg,png|max:2048' : '',
         ]);
         if($inputValidation->fails()) {
             return response()->json([
