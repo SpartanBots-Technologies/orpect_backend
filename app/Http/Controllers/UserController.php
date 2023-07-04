@@ -78,11 +78,12 @@ class UserController extends Controller
 
     public function updateUserImage(Request $request){
         $inputValidation = Validator::make($request->all(), [
-            "logoImage" => 'required|file|mimes:jpg,jpeg,png'
+            'image' => 'sometimes|file|mimes:jpg,jpeg,png|max:2048',
+            "logoImage" => 'required|file|mimes:jpg,jpeg,png|max:2048'
         ]);
         if($inputValidation->fails()){
             return response()->json([
-                'message' => 'Invalid image. Upload image of mime type jpg, jpeg & png',
+                'message' => 'Upload image of type jpg|jpeg|png and size upto 2MB',
                 'errors' => $inputValidation->errors(),
             ], 422);
         }
