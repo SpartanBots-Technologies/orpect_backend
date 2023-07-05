@@ -537,7 +537,7 @@ class EmployeeController extends Controller
         $employeeDetail = Employee::where('added_by', '=', Auth::user()->id)
                                 ->where('is_deleted', '=', 0)
                                 ->where('id', '=', $id)
-                                ->get();
+                                ->first();
         if($employeeDetail) {
             return response()->json([
                 'status' => true,
@@ -546,7 +546,7 @@ class EmployeeController extends Controller
         } else {
             return response()->json([
                 'status' => false,
-                'message' => "Employee Not Found",
+                'message' => "No Employee Found",
             ], 404);
         }
     }
