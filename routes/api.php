@@ -42,48 +42,55 @@ Route::get('getDesignations', [SuperAdminController::class, 'getDesignations']);
 Route::get('getCompanyTypes', [SuperAdminController::class, 'getCompanyTypes']);
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logoutUser']);
-    
-    Route::post('/addEmployee', [EmployeeController::class, 'addEmployee']);
-    Route::post('/uploadCSV', [EmployeeController::class, 'uploadEmployeeUsingCSV']);
-    Route::get('/getCurrentEmployees', [EmployeeController::class, 'getCurrentEmployees']);
-    Route::get('/getEmployeeById/{id}', [EmployeeController::class, 'getEmployeeById']);
-    Route::get('/getExEmployees', [EmployeeController::class, 'getExEmployees']);
-    Route::get('/getNonJoiners', [EmployeeController::class, 'getNonJoiners']);
-    Route::post('/updateEmployee/{id}', [EmployeeController::class, 'updateEmployee']);
-    Route::post('/updateEmployeeImage/{id}', [EmployeeController::class, 'updateEmployeeImage']);
-    Route::delete('/deleteEmployee/{id}', [EmployeeController::class, 'deleteEmployee']);
-    Route::post('/addReview', [EmployeeController::class, 'addReview']);
-    Route::post('/rateAndReview/{id}', [EmployeeController::class, 'rateAndReview']);
-    Route::get('/searchEmployeeGlobally', [EmployeeController::class, 'searchEmployeeGlobally']);
-    Route::get('/getTotalEmployees/{id}', [EmployeeController::class, 'getTotalEmployees']);
-    Route::get('/viewGlobalSearchedEmp/{id}', [EmployeeController::class, 'getEmployeeByIdForGlobalSearch']);
-    Route::get('/getExEmployeesAndNonJoiners', [EmployeeController::class, 'getExEmployeesAndNonJoiners']);
-    
-    Route::get('/getUser', [UserController::class, 'getUser']);
-    Route::post('/addPositions', [UserController::class, 'addPositions']);
-    Route::post('/updatePosition/{id}', [UserController::class, 'updatePosition']);
-    Route::get('/getPositions', [UserController::class, 'getPositions']);
-    Route::delete('/removePosition/{id}', [UserController::class, 'removePosition']);
-    Route::get('/getPositionAlreadyInUse/{position}', [UserController::class, 'getPositionAlreadyInUse']);
-    Route::post('/updateProfile', [UserController::class, 'updateProfile']);
-    Route::post('/updateUserImage', [UserController::class, 'updateUserImage']);
-    Route::post('/updatePassword', [UserController::class, 'updateUserPassword']);
-    // Route::middleware('auth.admin')->group(function () {
-    // });
-    Route::group(['prefix'=>'admin'],function(){
+    Route::group(['middleware' => 'user'],function(){
+        Route::post('/logout', [AuthController::class, 'logoutUser']);
+        
+        Route::post('/addEmployee', [EmployeeController::class, 'addEmployee']);
+        Route::post('/uploadCSV', [EmployeeController::class, 'uploadEmployeeUsingCSV']);
+        Route::get('/getCurrentEmployees', [EmployeeController::class, 'getCurrentEmployees']);
+        Route::get('/getEmployeeById/{id}', [EmployeeController::class, 'getEmployeeById']);
+        Route::get('/getExEmployees', [EmployeeController::class, 'getExEmployees']);
+        Route::get('/getNonJoiners', [EmployeeController::class, 'getNonJoiners']);
+        Route::post('/updateEmployee/{id}', [EmployeeController::class, 'updateEmployee']);
+        Route::post('/updateEmployeeImage/{id}', [EmployeeController::class, 'updateEmployeeImage']);
+        Route::delete('/deleteEmployee/{id}', [EmployeeController::class, 'deleteEmployee']);
+        Route::post('/addReview', [EmployeeController::class, 'addReview']);
+        Route::post('/rateAndReview/{id}', [EmployeeController::class, 'rateAndReview']);
+        Route::get('/searchEmployeeGlobally', [EmployeeController::class, 'searchEmployeeGlobally']);
+        Route::get('/getTotalEmployees/{id}', [EmployeeController::class, 'getTotalEmployees']);
+        Route::get('/viewGlobalSearchedEmp/{id}', [EmployeeController::class, 'getEmployeeByIdForGlobalSearch']);
+        Route::get('/getExEmployeesAndNonJoiners', [EmployeeController::class, 'getExEmployeesAndNonJoiners']);
+        
+        Route::get('/getUser', [UserController::class, 'getUser']);
+        Route::post('/addPositions', [UserController::class, 'addPositions']);
+        Route::post('/updatePosition/{id}', [UserController::class, 'updatePosition']);
+        Route::get('/getPositions', [UserController::class, 'getPositions']);
+        Route::delete('/removePosition/{id}', [UserController::class, 'removePosition']);
+        Route::get('/getPositionAlreadyInUse/{position}', [UserController::class, 'getPositionAlreadyInUse']);
+        Route::post('/updateProfile', [UserController::class, 'updateProfile']);
+        Route::post('/updateUserImage', [UserController::class, 'updateUserImage']);
+        Route::post('/updatePassword', [UserController::class, 'updateUserPassword']);
+    });
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    //apis for admin protected with admin middleware and sanctum
+    Route::group(['prefix'=>'admin', 'middleware' => 'admin'],function(){
         Route::post('/logoutAdmin', [AuthController::class, 'logoutAdmin']);
         Route::get('/getAdmin', [SuperAdminController::class, 'getAdmin']);
         Route::get('/searchGloballyAdmin', [SuperAdminController::class, 'searchGloballyAdmin']);
         Route::get('/getDashboardTotals', [SuperAdminController::class, 'dashboardWidgetCounts']);
         Route::post('/updateProfileAdmin', [SuperAdminController::class, 'updateProfileAdmin']);
-        Route::post('/addAdmin', [SuperAdminController::class, 'addAdmin']);
-        Route::post('/updateAdmin/{id}', [SuperAdminController::class, 'updateAdmin']);
-        Route::post('/updateAdminPassword', [SuperAdminController::class, 'updateAdminPassword']);
-        Route::post('/updateSubAdminPassword/{id}', [SuperAdminController::class, 'updateSubAdminPassword']);
-        Route::get('/getAllAdmins', [SuperAdminController::class, 'getAllAdmins']);
-        Route::get('/getAdminById/{id}', [SuperAdminController::class, 'getAdminById']);
-        Route::delete('/deleteAdmin/{id}', [SuperAdminController::class, 'deleteAdmin']);
+
+        Route::group(['middleware' => 'admin.is_master'],function(){
+            Route::post('/addAdmin', [SuperAdminController::class, 'addAdmin']);
+            Route::post('/updateAdmin/{id}', [SuperAdminController::class, 'updateAdmin']);
+            Route::post('/updateAdminPassword', [SuperAdminController::class, 'updateAdminPassword']);
+            Route::post('/updateSubAdminPassword/{id}', [SuperAdminController::class, 'updateSubAdminPassword']);
+            Route::get('/getAllAdmins', [SuperAdminController::class, 'getAllAdmins']);
+            Route::get('/getAdminById/{id}', [SuperAdminController::class, 'getAdminById']);
+            Route::delete('/deleteAdmin/{id}', [SuperAdminController::class, 'deleteAdmin']);
+        });
         
         Route::get('/getEmpReviewForAdmin/{id}', [EmployeeController::class, 'getEmpReviewForAdmin']);
         Route::get('/getCurrentEmployees', [EmployeeController::class, 'getCurrentEmployees']);
