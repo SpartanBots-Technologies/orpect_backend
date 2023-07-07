@@ -4,7 +4,9 @@ namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
-
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use Symfony\Component\Routing\Exception\RouteNotFoundException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class Handler extends ExceptionHandler
 {
     /**
@@ -26,5 +28,31 @@ class Handler extends ExceptionHandler
         $this->reportable(function (Throwable $e) {
             //
         });
+    }
+
+    public function render($request, Throwable $exception)
+    {
+        if ($exception instanceof MethodNotAllowedHttpException) {
+            return response()->json([
+                'statusCode' => '405',
+                'error' => 'Method Not Allowed',
+                'message' => 'The requested method is not supported for this route.'
+            ], 405);
+        }
+        if ($exception instanceof RouteNotFoundException) {
+            return response()->json([
+                'statusCode' => '404',
+                'error' => 'Route Not Found',
+                'message' => 'The requested route could not be found.'
+            ], 404);
+        }
+        if ($exception instanceof NotFoundHttpException) {
+            return response()->json([
+                'statusCode' => '404',
+                'error' => 'Not Found',
+                'message' => 'The requested resource could not be found.'
+            ], 404);
+        }
+        return parent::render($request, $exception);
     }
 }
