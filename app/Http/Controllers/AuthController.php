@@ -55,7 +55,8 @@ class AuthController extends Controller
 
         $data = [
             'userName' => $useremail,
-            'CompanyName' => 'Orpect',
+            'CompanyName' => 'ORPECT',
+            'websiteLink' => 'https://orpect.com/',
             'otp' => $randOtp,
         ];
 
@@ -238,7 +239,8 @@ class AuthController extends Controller
         }
         $useremail = $request->email;
         $data = [
-            'CompanyName' => 'Orpect',
+            'CompanyName' => 'ORPECT',
+            'websiteLink' => 'https://orpect.com/',
             'websiteLogin' => 'https://orpect.com/login',
         ];
         try{ 
@@ -337,8 +339,9 @@ class AuthController extends Controller
 
             $data = [
                 'userName' => $useremail,
-                'CompanyName' => 'Orpect',
+                'CompanyName' => 'ORPECT',
                 'link' => $domain.'/reset-password?token='.$uid,
+                'websiteLink' => 'https://orpect.com/',
             ];
 
             Mail::send('auth.forgotPassEmailTemp', ['data' => $data], function ($message) use ($useremail){
@@ -520,8 +523,9 @@ class AuthController extends Controller
 
             $data = [
                 'userName' => $useremail,
-                'CompanyName' => 'Orpect',
+                'CompanyName' => 'ORPECT',
                 'link' => $domain.'/spadmin/reset-password?token='.$uid,
+                'websiteLink' => 'https://orpect.com/',
             ];
 
             Mail::send('auth.forgotPassEmailTemp', ['data' => $data], function ($message) use ($useremail){
@@ -627,6 +631,7 @@ class AuthController extends Controller
                 'email' => $senderEmail,
                 'subject' => $request->subject != "" ? $request->subject : "",
                 'message' => $request->message,
+                'websiteLink' => 'https://orpect.com/',
             ];
             $useremail = "support@orpect.com";
             Mail::send('auth.supportEmail', ['data' => $data], function ($message) use ($useremail, $senderName, $senderEmail){
