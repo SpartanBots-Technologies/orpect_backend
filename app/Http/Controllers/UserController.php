@@ -353,7 +353,7 @@ class UserController extends Controller
             ]);
             $useremail = $companydetails->email;
             $data = [
-                'CompanyName' => 'Orpect',
+                'CompanyName' => 'ORPECT',
                 'websiteLink' => 'https://orpect.com/',
                 'websiteLogin' => 'https://orpect.com/login',
             ];
