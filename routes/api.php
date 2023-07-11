@@ -44,23 +44,23 @@ Route::get('getCompanyTypes', [SuperAdminController::class, 'getCompanyTypes']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::group(['middleware' => 'user'],function(){
         Route::post('/logout', [AuthController::class, 'logoutUser']);
-        
+
         Route::post('/addEmployee', [EmployeeController::class, 'addEmployee']);
         Route::post('/uploadCSV', [EmployeeController::class, 'uploadEmployeeUsingCSV']);
         Route::get('/getCurrentEmployees', [EmployeeController::class, 'getCurrentEmployees']);
-        Route::get('/getEmployeeById/{id}', [EmployeeController::class, 'getEmployeeById']);
+        Route::get('/getEmployeeById/{id}', [EmployeeController::class, 'getEmployeeById'])->middleware('separateNameAndId');
         Route::get('/getExEmployees', [EmployeeController::class, 'getExEmployees']);
         Route::get('/getNonJoiners', [EmployeeController::class, 'getNonJoiners']);
-        Route::post('/updateEmployee/{id}', [EmployeeController::class, 'updateEmployee']);
-        Route::post('/updateEmployeeImage/{id}', [EmployeeController::class, 'updateEmployeeImage']);
-        Route::delete('/deleteEmployee/{id}', [EmployeeController::class, 'deleteEmployee']);
+        Route::post('/updateEmployee/{id}', [EmployeeController::class, 'updateEmployee'])->middleware('separateNameAndId');
+        Route::post('/updateEmployeeImage/{id}', [EmployeeController::class, 'updateEmployeeImage'])->middleware('separateNameAndId');
+        Route::delete('/deleteEmployee/{id}', [EmployeeController::class, 'deleteEmployee'])->middleware('separateNameAndId');
         Route::post('/addReview', [EmployeeController::class, 'addReview']);
-        Route::post('/rateAndReview/{id}', [EmployeeController::class, 'rateAndReview']);
+        Route::post('/rateAndReview/{id}', [EmployeeController::class, 'rateAndReview'])->middleware('separateNameAndId');
         Route::get('/searchEmployeeGlobally', [EmployeeController::class, 'searchEmployeeGlobally']);
-        Route::get('/getTotalEmployees/{id}', [EmployeeController::class, 'getTotalEmployees']);
-        Route::get('/viewGlobalSearchedEmp/{id}', [EmployeeController::class, 'getEmployeeByIdForGlobalSearch']);
+        Route::get('/getTotalEmployees/{id}', [EmployeeController::class, 'getTotalEmployees'])->middleware('separateNameAndId');
+        Route::get('/viewGlobalSearchedEmp/{id}', [EmployeeController::class, 'viewReviewGlobalSearch'])->middleware('separateNameAndId');
         Route::get('/getExEmployeesAndNonJoiners', [EmployeeController::class, 'getExEmployeesAndNonJoiners']);
-        
+
         Route::get('/getUser', [UserController::class, 'getUser']);
         Route::post('/addPositions', [UserController::class, 'addPositions']);
         Route::post('/updatePosition/{id}', [UserController::class, 'updatePosition']);
@@ -91,7 +91,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/getAdminById/{id}', [SuperAdminController::class, 'getAdminById']);
             Route::delete('/deleteAdmin/{id}', [SuperAdminController::class, 'deleteAdmin']);
         });
-        
+
         Route::get('/getEmpReviewForAdmin/{id}', [EmployeeController::class, 'getEmpReviewForAdmin']);
         Route::get('/getCurrentEmployees', [EmployeeController::class, 'getCurrentEmployees']);
         Route::get('/getEmployeeById/{id}', [EmployeeController::class, 'getEmployeeByIdForAdmin']);
