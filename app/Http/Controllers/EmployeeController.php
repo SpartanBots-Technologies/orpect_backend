@@ -509,7 +509,38 @@ class EmployeeController extends Controller
         $searchValue = $request->input('searchText', '');
         $position = $request->input('position', '');
         $id = $request->id ? $request->id : Auth::user()->id;
-        $query = Employee::where('added_by', '=', $id)
+        $query = Employee::select(DB::raw('CONCAT(LCASE(REPLACE(emp_name, " ", "")),"_", id) AS sid'),
+                        'emp_id',	
+                        'emp_name',
+                        'email',
+                        'phone',
+                        'position',
+                        'date_of_joining',
+                        'profile_image',
+                        'ex_employee',
+                        'non_joiner',
+                        'date_of_leaving',
+                        'review',
+                        'added_by',
+                        'created_at',
+                        'updated_at',
+                        'is_deleted',
+                        'date_of_birth',
+                        'emp_pan',
+                        'permanent_address',
+                        'city',
+                        'country',
+                        'state',
+                        'postal_code',
+                        'linked_in',
+                        'status_changed_at',
+                        'overall_rating',
+                        'performance_rating',
+                        'professional_skills_rating',
+                        'teamwork_communication_rating',
+                        'attitude_behaviour_rating',
+                        'last_CTC',)
+            ->where('added_by', '=', $id)
             ->where('ex_employee', '=', 0)
             ->where('non_joiner', '=', 0)
             ->where('is_deleted', '=', 0);
@@ -536,7 +567,38 @@ class EmployeeController extends Controller
     }
 
     public function getEmployeeById(string $id){
-        $employeeDetail = Employee::where('added_by', '=', Auth::user()->id)
+        $employeeDetail = Employee::select(DB::raw('CONCAT(LCASE(REPLACE(emp_name, " ", "")),"_", id) AS sid'),
+                                    'emp_id',	
+                                    'emp_name',
+                                    'email',
+                                    'phone',
+                                    'position',
+                                    'date_of_joining',
+                                    'profile_image',
+                                    'ex_employee',
+                                    'non_joiner',
+                                    'date_of_leaving',
+                                    'review',
+                                    'added_by',
+                                    'created_at',
+                                    'updated_at',
+                                    'is_deleted',
+                                    'date_of_birth',
+                                    'emp_pan',
+                                    'permanent_address',
+                                    'city',
+                                    'country',
+                                    'state',
+                                    'postal_code',
+                                    'linked_in',
+                                    'status_changed_at',
+                                    'overall_rating',
+                                    'performance_rating',
+                                    'professional_skills_rating',
+                                    'teamwork_communication_rating',
+                                    'attitude_behaviour_rating',
+                                    'last_CTC',)
+                                ->where('added_by', '=', Auth::user()->id)
                                 ->where('is_deleted', '=', 0)
                                 ->where('id', '=', $id)
                                 ->first();
@@ -585,7 +647,38 @@ class EmployeeController extends Controller
         $searchValue = $request->input('searchText', '');
         $position = $request->input('position', '');
         $id = $request->id ? $request->id : Auth::user()->id;
-        $query = Employee::where('added_by', '=', $id)
+        $query = Employee::select(DB::raw('CONCAT(LCASE(REPLACE(emp_name, " ", "")),"_", id) AS sid'),
+                        'emp_id',	
+                        'emp_name',
+                        'email',
+                        'phone',
+                        'position',
+                        'date_of_joining',
+                        'profile_image',
+                        'ex_employee',
+                        'non_joiner',
+                        'date_of_leaving',
+                        'review',
+                        'added_by',
+                        'created_at',
+                        'updated_at',
+                        'is_deleted',
+                        'date_of_birth',
+                        'emp_pan',
+                        'permanent_address',
+                        'city',
+                        'country',
+                        'state',
+                        'postal_code',
+                        'linked_in',
+                        'status_changed_at',
+                        'overall_rating',
+                        'performance_rating',
+                        'professional_skills_rating',
+                        'teamwork_communication_rating',
+                        'attitude_behaviour_rating',
+                        'last_CTC',)
+                    ->where('added_by', '=', $id)
                     ->where('ex_employee', '=', 1)
                     ->where('non_joiner', '=', 0)
                     ->where('is_deleted', '=', 0);
@@ -615,7 +708,38 @@ class EmployeeController extends Controller
         $searchValue = $request->input('searchText', '');
         $position = $request->input('position', '');
         $id = $request->id ? $request->id : Auth::user()->id;
-        $query = Employee::where('added_by', '=', $id)
+        $query = Employee::select(DB::raw('CONCAT(LCASE(REPLACE(emp_name, " ", "")),"_", id) AS sid'),
+                        'emp_id',	
+                        'emp_name',
+                        'email',
+                        'phone',
+                        'position',
+                        'date_of_joining',
+                        'profile_image',
+                        'ex_employee',
+                        'non_joiner',
+                        'date_of_leaving',
+                        'review',
+                        'added_by',
+                        'created_at',
+                        'updated_at',
+                        'is_deleted',
+                        'date_of_birth',
+                        'emp_pan',
+                        'permanent_address',
+                        'city',
+                        'country',
+                        'state',
+                        'postal_code',
+                        'linked_in',
+                        'status_changed_at',
+                        'overall_rating',
+                        'performance_rating',
+                        'professional_skills_rating',
+                        'teamwork_communication_rating',
+                        'attitude_behaviour_rating',
+                        'last_CTC',)
+                    ->where('added_by', '=', $id)
                     ->where('non_joiner', '=', 1)
                     ->where('ex_employee', '=', 0)
                     ->where('is_deleted', '=', 0);
@@ -698,7 +822,7 @@ class EmployeeController extends Controller
         $emp = $request->input('emp', '');
         $userTakenMem = Auth::user()->taken_membership;
         $employeesQuery = Employee::select(
-            'employees.id',
+            DB::raw('CONCAT(LCASE(REPLACE(employees.emp_name, " ", "")),"_", employees.id) AS sid'),
             'employees.emp_name',
             DB::raw("CASE
                 WHEN " . $userTakenMem . " = 0 THEN LCASE(CONCAT(SUBSTRING(employees.emp_name, 1, 2), 'XXXX@XXXil.com'))
@@ -919,14 +1043,14 @@ class EmployeeController extends Controller
         ], 400);
     }
 
-    public function getEmployeeByIdForGlobalSearch(String $id){
+    public function viewReviewGlobalSearch(String $id){
         try{
             $employee = Employee::where('id', '=', $id)->first();
             if($employee) {
 
                 if( Auth::user()->taken_membership == 0 ) {
                     $particularEmployee = Employee::select(
-                        'id',
+                        DB::raw('CONCAT(LCASE(REPLACE(emp_name, " ", "")),"_", id) AS sid'),
                         'emp_name',
                         DB::raw("LCASE(CONCAT(SUBSTRING(emp_name, 1, 2), 'XXXX@XXXil.com'))
                             AS email"
@@ -1041,7 +1165,38 @@ class EmployeeController extends Controller
         $emp = $request->input('emp', '');
         // $id = $request->id ? $request->id : Auth::user()->id;
         $id = Auth::user()->id;
-        $query = Employee::where('added_by', '=', $id)
+        $query = Employee::select(DB::raw('CONCAT(LCASE(REPLACE(emp_name, " ", "")),"_", id) AS sid'),
+                            'emp_id',	
+                            'emp_name',
+                            'email',
+                            'phone',
+                            'position',
+                            'date_of_joining',
+                            'profile_image',
+                            'ex_employee',
+                            'non_joiner',
+                            'date_of_leaving',
+                            'review',
+                            'added_by',
+                            'created_at',
+                            'updated_at',
+                            'is_deleted',
+                            'date_of_birth',
+                            'emp_pan',
+                            'permanent_address',
+                            'city',
+                            'country',
+                            'state',
+                            'postal_code',
+                            'linked_in',
+                            'status_changed_at',
+                            'overall_rating',
+                            'performance_rating',
+                            'professional_skills_rating',
+                            'teamwork_communication_rating',
+                            'attitude_behaviour_rating',
+                            'last_CTC',)
+                    ->where('added_by', '=', $id)
                     ->where('is_deleted', '=', 0)
                     ->where(function ($query) {
                         $query->where(function ($query) {
