@@ -313,7 +313,9 @@ class AuthController extends Controller
     }
 
     public function logoutUser(){
-        Auth::user()->tokens()->delete();
+        $user = Auth::user();
+        $token = $user->currentAccessToken();
+        $token->delete();
         return response()->json([
             'status' => true,
             'message' => "Logout successfully",
@@ -497,7 +499,9 @@ class AuthController extends Controller
     }
 
     public function logoutAdmin(){
-        Auth::guard('admin')->user()->tokens()->delete();
+        $admin = Auth::guard('admin')->user();
+        $token = $admin->currentAccessToken();
+        $token->delete();
         return response()->json([
             'status' => true,
             'message' => "Logout successfully",
