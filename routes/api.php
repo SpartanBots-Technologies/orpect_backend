@@ -84,12 +84,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::group(['middleware' => 'admin.is_master'],function(){
             Route::post('/addAdmin', [SuperAdminController::class, 'addAdmin']);
-            Route::post('/updateAdmin/{id}', [SuperAdminController::class, 'updateSubAdmin']);
+            Route::post('/updateAdmin/{id}', [SuperAdminController::class, 'updateSubAdmin'])->middleware('separateNameAndId');
             Route::post('/updateAdminPassword', [SuperAdminController::class, 'updateAdminPassword']);
-            Route::post('/updateSubAdminPassword/{id}', [SuperAdminController::class, 'updateSubAdminPassword']);
+            Route::post('/updateSubAdminPassword/{id}', [SuperAdminController::class, 'updateSubAdminPassword'])->middleware('separateNameAndId');
             Route::get('/getAllAdmins', [SuperAdminController::class, 'getAllAdmins']);
-            Route::get('/getAdminById/{id}', [SuperAdminController::class, 'getAdminById']);
-            Route::delete('/deleteAdmin/{id}', [SuperAdminController::class, 'deleteAdmin']);
+            Route::get('/getAdminById/{id}', [SuperAdminController::class, 'getAdminById'])->middleware('separateNameAndId');
+            Route::delete('/deleteAdmin/{id}', [SuperAdminController::class, 'deleteAdmin'])->middleware('separateNameAndId');
         });
 
         Route::get('/getEmpReviewForAdmin/{id}', [EmployeeController::class, 'getEmpReviewForAdmin'])->middleware('separateNameAndId');
