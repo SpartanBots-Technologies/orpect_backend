@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\File;
@@ -281,7 +282,38 @@ class UserController extends Controller
     }
 
     public function getCompanies(){
-        $allCompanies = User::where('is_deleted', 0)->where('is_account_verified', 1)->paginate(10);
+        $allCompanies = User::select(
+                    DB::raw('CONCAT(LCASE(REPLACE(company_name, " ", "")),"_", id) AS sid'),
+                    'company_name',
+                    'company_type',
+                    'full_name',
+                    'designation',
+                    'domain_name',
+                    'email',
+                    'image',
+                    'email_verified',
+                    'email_verified_at',
+                    'remember_token',
+                    'created_at',
+                    'updated_at',
+                    'role',
+                    'coupon',
+                    'terms_and_conditions',
+                    'is_deleted',
+                    'deleted_by',
+                    'company_phone',
+                    'webmaster_email',
+                    'company_address',
+                    'company_city',
+                    'company_state',
+                    'company_country',
+                    'company_postal_code',
+                    'registration_number',
+                    'company_social_link',
+                    'is_account_verified',
+                    'taken_membership',
+                )
+                ->where('is_deleted', 0)->where('is_account_verified', 1)->paginate(10);
         if($allCompanies){
             return response()->json([
                 'status' => true,
@@ -293,7 +325,38 @@ class UserController extends Controller
     }
 
     public function getCompanyById(String $id){
-        $company = User::where('id', $id)
+        $company = User::select(
+                        DB::raw('CONCAT(LCASE(REPLACE(company_name, " ", "")),"_", id) AS sid'),
+                        'company_name',
+                        'company_type',
+                        'full_name',
+                        'designation',
+                        'domain_name',
+                        'email',
+                        'image',
+                        'email_verified',
+                        'email_verified_at',
+                        'remember_token',
+                        'created_at',
+                        'updated_at',
+                        'role',
+                        'coupon',
+                        'terms_and_conditions',
+                        'is_deleted',
+                        'deleted_by',
+                        'company_phone',
+                        'webmaster_email',
+                        'company_address',
+                        'company_city',
+                        'company_state',
+                        'company_country',
+                        'company_postal_code',
+                        'registration_number',
+                        'company_social_link',
+                        'is_account_verified',
+                        'taken_membership',
+                    )
+                    ->where('id', $id)
                     ->where('is_deleted', 0)
                     ->first();
         $totalCurrentEmp = Employee::where('added_by', '=', $id)
@@ -405,21 +468,21 @@ class UserController extends Controller
 
     public function getPendingVerificationRequests(){
         $companydetails = User::select(
-                                        'id',
-                                        'company_name',
-                                        'company_type',
-                                        'full_name',
-                                        'designation',
-                                        'domain_name',
-                                        'email',
-                                        'company_phone',
-                                        'registration_number',
-                                        'created_at AS registration_time',
-                                )
+                            DB::raw('CONCAT(LCASE(REPLACE(company_name, " ", "")),"_", id) AS sid'),
+                            'company_name',
+                            'company_type',
+                            'full_name',
+                            'designation',
+                            'domain_name',
+                            'email',
+                            'company_phone',
+                            'registration_number',
+                            'created_at AS registration_time',
+                        )
             ->where('is_account_verified', 0)
             ->where('is_deleted', 0)
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(10);
         return response()->json([
             'status' => true,
             'pendingRequests' => $companydetails,

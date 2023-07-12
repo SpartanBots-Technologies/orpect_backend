@@ -616,7 +616,39 @@ class EmployeeController extends Controller
     }
 
     public function getEmployeeByIdForAdmin(string $id){
-        $employeeDetail = Employee::where('is_deleted', '=', 0)
+        $employeeDetail = Employee::select(DB::raw('CONCAT(LCASE(REPLACE(emp_name, " ", "")),"_", id) AS sid'),
+                                    'emp_id',	
+                                    'emp_name',
+                                    'email',
+                                    'phone',
+                                    'position',
+                                    'date_of_joining',
+                                    'profile_image',
+                                    'ex_employee',
+                                    'non_joiner',
+                                    'date_of_leaving',
+                                    'review',
+                                    'added_by',
+                                    'created_at',
+                                    'updated_at',
+                                    'is_deleted',
+                                    'date_of_birth',
+                                    'emp_pan',
+                                    'permanent_address',
+                                    'city',
+                                    'country',
+                                    'state',
+                                    'postal_code',
+                                    'linked_in',
+                                    'status_changed_at',
+                                    'overall_rating',
+                                    'performance_rating',
+                                    'professional_skills_rating',
+                                    'teamwork_communication_rating',
+                                    'attitude_behaviour_rating',
+                                    'last_CTC',
+                                )
+                                ->where('is_deleted', '=', 0)
                                 ->where('id', '=', $id)
                                 ->get();
         return response()->json([
