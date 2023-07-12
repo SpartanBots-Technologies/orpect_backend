@@ -84,7 +84,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::group(['middleware' => 'admin.is_master'],function(){
             Route::post('/addAdmin', [SuperAdminController::class, 'addAdmin']);
-            Route::post('/updateAdmin/{id}', [SuperAdminController::class, 'updateAdmin']);
+            Route::post('/updateAdmin/{id}', [SuperAdminController::class, 'updateSubAdmin']);
             Route::post('/updateAdminPassword', [SuperAdminController::class, 'updateAdminPassword']);
             Route::post('/updateSubAdminPassword/{id}', [SuperAdminController::class, 'updateSubAdminPassword']);
             Route::get('/getAllAdmins', [SuperAdminController::class, 'getAllAdmins']);
@@ -92,18 +92,18 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::delete('/deleteAdmin/{id}', [SuperAdminController::class, 'deleteAdmin']);
         });
 
-        Route::get('/getEmpReviewForAdmin/{id}', [EmployeeController::class, 'getEmpReviewForAdmin']);
+        Route::get('/getEmpReviewForAdmin/{id}', [EmployeeController::class, 'getEmpReviewForAdmin'])->middleware('separateNameAndId');
         Route::get('/getCurrentEmployees', [EmployeeController::class, 'getCurrentEmployees']);
-        Route::get('/getEmployeeById/{id}', [EmployeeController::class, 'getEmployeeByIdForAdmin']);
+        Route::get('/getEmployeeById/{id}', [EmployeeController::class, 'getEmployeeByIdForAdmin'])->middleware('separateNameAndId');
         Route::get('/getExEmployees', [EmployeeController::class, 'getExEmployees']);
         Route::get('/getNonJoiners', [EmployeeController::class, 'getNonJoiners']);
-        Route::delete('/deleteEmployeeByAdmin/{id}', [EmployeeController::class, 'deleteEmployee']);
+        Route::delete('/deleteEmployeeByAdmin/{id}', [EmployeeController::class, 'deleteEmployee'])->middleware('separateNameAndId');
 
         Route::get('/getCompanies', [UserController::class, 'getCompanies']);
-        Route::get('/getCompanyById/{id}', [UserController::class, 'getCompanyById']);
-        Route::delete('/deleteCompany/{id}', [UserController::class, 'deleteCompany']);
-        Route::delete('/rejectCompany/{id}', [UserController::class, 'rejectCompany']);
-        Route::post('/verifyCompany/{id}', [UserController::class, 'verifyCompany']);
+        Route::get('/getCompanyById/{id}', [UserController::class, 'getCompanyById'])->middleware('separateNameAndId');
+        Route::delete('/deleteCompany/{id}', [UserController::class, 'deleteCompany'])->middleware('separateNameAndId');
+        Route::delete('/rejectCompany/{id}', [UserController::class, 'rejectCompany'])->middleware('separateNameAndId');
+        Route::post('/verifyCompany/{id}', [UserController::class, 'verifyCompany'])->middleware('separateNameAndId');
         Route::get('/getPendingVerificationRequests', [UserController::class, 'getPendingVerificationRequests']);
     });
 });

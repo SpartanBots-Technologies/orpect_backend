@@ -38,6 +38,7 @@ class SuperAdminController extends Controller
             "fullname" => 'required',
             "phone" => 'required|regex:/^[0-9]{10}$/',
             'image' => $request->image ? 'file|mimes:jpg,jpeg,png|max:2048' : '',
+            'email' => 'required|email:filter',
         ]);
         if($inputValidation->fails()){
             return response()->json([
@@ -47,7 +48,18 @@ class SuperAdminController extends Controller
             ], 422);
         }
         $id = Auth::guard('admin')->user()->id;
-
+        if(Auth::guard('admin')->user()->is_master == 1){
+            if($request->email != Auth::guard('admin')->user()->email
+                && SuperAdmin::where('email', $request->email)->exists()){
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Email id already exists.',
+                    ], 422);
+            }
+            $inputEmail = $request->email;
+        }else{
+            $inputEmail = Auth::guard('admin')->user()->email;
+        }
         if( ( $request->phone != Auth::guard('admin')->user()->phone ) && 
             SuperAdmin::where('phone', $request->phone)->exists()){
                 return response()->json([
@@ -79,6 +91,7 @@ class SuperAdminController extends Controller
 
             $adminUpdated = $adminDetails->update([
                 'fullname' => $request->fullname,
+                'email' => $inputEmail,
                 'phone' => $request->phone,
                 'image' => $image,
                 'address' => $request->address != "" ? $request->address : null,
@@ -113,11 +126,6 @@ class SuperAdminController extends Controller
             "email" => 'required|email|unique:super_admins,email',
             "password" => 'required|confirmed',
             "phone" => 'required|regex:/^[0-9]{10}$/|unique:super_admins,phone',
-            // "address" => 'required',
-            // "city" => 'required',
-            // "state" => 'required',
-            // "country" => 'required',
-            // "postalCode" => 'required',
             'image' => 'sometimes|file|mimes:jpg,jpeg,png|max:2048',
         ]);
         if($inputValidation->fails()){
@@ -174,16 +182,11 @@ class SuperAdminController extends Controller
         }
     }
 
-    public function updateAdmin(Request $request, String $id){
+    public function updateSubAdmin(Request $request, String $id){
         $inputValidation = Validator::make($request->all(), [
             "fullname" => 'required',
             "email" => 'required|email',
             "phone" => 'required|regex:/^[0-9]{10}$/',
-            // "address" => 'required',
-            // "city" => 'required',
-            // "state" => 'required',
-            // "country" => 'required',
-            // "postalCode" => 'required',
             'image' => 'sometimes|file|mimes:jpg,jpeg,png|max:2048',
         ]);
         if($inputValidation->fails()){
