@@ -354,8 +354,8 @@ class UserController extends Controller
             $useremail = $companydetails->email;
             $data = [
                 'CompanyName' => 'ORPECT',
-                'websiteLink' => 'https://orpect.com/',
-                'websiteLogin' => 'https://orpect.com/login',
+                'websiteLink' => config('app.url'),
+                'websiteLogin' => config('app.url').'login',
             ];
             try{ 
                 Mail::send('auth.accountVerified', ['data' => $data], function ($message) use ($useremail){
