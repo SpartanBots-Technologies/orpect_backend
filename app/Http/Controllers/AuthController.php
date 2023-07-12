@@ -56,7 +56,7 @@ class AuthController extends Controller
         $data = [
             'userName' => $useremail,
             'CompanyName' => 'ORPECT',
-            'websiteLink' => 'https://orpect.com/',
+            'websiteLink' => config('app.url'),
             'otp' => $randOtp,
         ];
 
@@ -240,8 +240,8 @@ class AuthController extends Controller
         $useremail = $request->email;
         $data = [
             'CompanyName' => 'ORPECT',
-            'websiteLink' => 'https://orpect.com/',
-            'websiteLogin' => 'https://orpect.com/login',
+            'websiteLink' => config('app.url'),
+            'websiteLogin' => config('app.url').'login',
         ];
         try{ 
             Mail::send('auth.underVerification', ['data' => $data], function ($message) use ($useremail){
@@ -325,7 +325,6 @@ class AuthController extends Controller
     public function forgotpassword(Request $request){
         $inputValidation = Validator::make($request->all(), [
             "email" => 'required|email',
-            "currentDomain" => 'required'
         ]);
         if($inputValidation->fails()){
             return response()->json([
@@ -337,13 +336,13 @@ class AuthController extends Controller
         $useremail = $request->email;
         if(User::where('email', '=', $useremail)->exists()){
             $uid =  Str::uuid()->toString();
-            $domain =  $request->currentDomain;
+            $domain =  config('app.url');
 
             $data = [
                 'userName' => $useremail,
                 'CompanyName' => 'ORPECT',
-                'link' => $domain.'/reset-password?token='.$uid,
-                'websiteLink' => 'https://orpect.com/',
+                'link' => $domain.'reset-password?token='.$uid,
+                'websiteLink' => $domain,
             ];
 
             Mail::send('auth.forgotPassEmailTemp', ['data' => $data], function ($message) use ($useremail){
@@ -511,7 +510,6 @@ class AuthController extends Controller
     public function forgotPasswordAdmin(Request $request){
         $inputValidation = Validator::make($request->all(), [
             "email" => 'required|email',
-            "currentDomain" => 'required'
         ]);
         if($inputValidation->fails()){
             return response()->json([
@@ -523,13 +521,13 @@ class AuthController extends Controller
         $useremail = $request->email;
         if(SuperAdmin::where('email', '=', $useremail)->exists()){
             $uid =  Str::uuid()->toString();
-            $domain =  $request->currentDomain;
+            $domain =  config('services.react.domain');
 
             $data = [
                 'userName' => $useremail,
                 'CompanyName' => 'ORPECT',
-                'link' => $domain.'/spadmin/reset-password?token='.$uid,
-                'websiteLink' => 'https://orpect.com/',
+                'link' => $domain.'reset-password?token='.$uid,
+                'websiteLink' => config('app.url'),
             ];
 
             Mail::send('auth.forgotPassEmailTemp', ['data' => $data], function ($message) use ($useremail){
@@ -635,7 +633,7 @@ class AuthController extends Controller
                 'email' => $senderEmail,
                 'subject' => $request->subject != "" ? $request->subject : "",
                 'message' => $request->message,
-                'websiteLink' => 'https://orpect.com/',
+                'websiteLink' => config('app.url'),
             ];
             $useremail = "support@orpect.com";
             Mail::send('auth.supportEmail', ['data' => $data], function ($message) use ($useremail, $senderName, $senderEmail){
