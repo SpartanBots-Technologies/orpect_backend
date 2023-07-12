@@ -32,6 +32,6 @@ return [
     ],
 
     'react' => [
-        'domain' => env('REACT_DOMAIN'),
+        'domain' => env('SUPER_ADMIN_DOMAIN'),
     ],
 ];
