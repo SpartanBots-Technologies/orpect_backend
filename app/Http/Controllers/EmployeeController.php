@@ -508,7 +508,7 @@ class EmployeeController extends Controller
     public function getCurrentEmployees(Request $request){
         $searchValue = $request->input('searchText', '');
         $position = $request->input('position', '');
-        $id = $request->id ? $request->id : Auth::user()->id;
+        $id = $request->id ? intval(substr($request->id, strpos($request->id, '_') + 1)) : Auth::user()->id;
         $query = Employee::select(DB::raw('CONCAT(LCASE(REPLACE(emp_name, " ", "")),"_", id) AS sid'),
                         'emp_id',	
                         'emp_name',
@@ -678,7 +678,7 @@ class EmployeeController extends Controller
     public function getExEmployees(Request $request){
         $searchValue = $request->input('searchText', '');
         $position = $request->input('position', '');
-        $id = $request->id ? $request->id : Auth::user()->id;
+        $id = $request->id ? intval(substr($request->id, strpos($request->id, '_') + 1)) : Auth::user()->id;
         $query = Employee::select(DB::raw('CONCAT(LCASE(REPLACE(emp_name, " ", "")),"_", id) AS sid'),
                         'emp_id',	
                         'emp_name',
@@ -739,7 +739,7 @@ class EmployeeController extends Controller
     public function getNonJoiners(Request $request){
         $searchValue = $request->input('searchText', '');
         $position = $request->input('position', '');
-        $id = $request->id ? $request->id : Auth::user()->id;
+        $id = $request->id ? intval(substr($request->id, strpos($request->id, '_') + 1)) : Auth::user()->id;
         $query = Employee::select(DB::raw('CONCAT(LCASE(REPLACE(emp_name, " ", "")),"_", id) AS sid'),
                         'emp_id',	
                         'emp_name',

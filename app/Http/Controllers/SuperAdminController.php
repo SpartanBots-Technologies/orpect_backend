@@ -348,7 +348,7 @@ class SuperAdminController extends Controller
 
     public function getAllAdmins(){
         $allAdmins = SuperAdmin::select(
-                                    'id',
+                                    DB::raw('CONCAT(LCASE(REPLACE(fullname, " ", "")),"_", id) AS sid'),
                                     'fullname',
                                     'phone',
                                     'email',
@@ -487,7 +487,38 @@ class SuperAdminController extends Controller
             $searchedResult = $query->orderBy('created_at', 'desc')
             ->paginate(10);
         }else{
-            $query = User::where('is_deleted', '=', 0)
+            $query = User::select(
+                            DB::raw('CONCAT(LCASE(REPLACE(company_name, " ", "")),"_", id) AS sid'),
+                            'company_name',
+                            'company_type',
+                            'full_name',
+                            'designation',
+                            'domain_name',
+                            'email',
+                            'image',
+                            'email_verified',
+                            'email_verified_at',
+                            'remember_token',
+                            'created_at',
+                            'updated_at',
+                            'role',
+                            'coupon',
+                            'terms_and_conditions',
+                            'is_deleted',
+                            'deleted_by',
+                            'company_phone',
+                            'webmaster_email',
+                            'company_address',
+                            'company_city',
+                            'company_state',
+                            'company_country',
+                            'company_postal_code',
+                            'registration_number',
+                            'company_social_link',
+                            'is_account_verified',
+                            'taken_membership',
+                        )
+                        ->where('is_deleted', '=', 0)
                         ->where('is_account_verified', '=', 1);
             if (!empty($searchText)) {
                 $query->where(function ($query) use ($searchText) {
