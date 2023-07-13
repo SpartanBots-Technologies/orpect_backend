@@ -126,7 +126,7 @@ class SuperAdminController extends Controller
             "email" => 'required|email|unique:super_admins,email',
             "password" => 'required|confirmed',
             "phone" => 'required|regex:/^[0-9]{10}$/|unique:super_admins,phone',
-            'image' => 'sometimes|file|mimes:jpg,jpeg,png|max:2048',
+            'image' => $request->image ? 'file|mimes:jpg,jpeg,png|max:2048' : '',
         ]);
         if($inputValidation->fails()){
             return response()->json([
@@ -187,7 +187,7 @@ class SuperAdminController extends Controller
             "fullname" => 'required',
             "email" => 'required|email',
             "phone" => 'required|regex:/^[0-9]{10}$/',
-            'image' => 'sometimes|file|mimes:jpg,jpeg,png|max:2048',
+            'image' => $request->image ? 'file|mimes:jpg,jpeg,png|max:2048' : '',
         ]);
         if($inputValidation->fails()){
             return response()->json([
@@ -409,6 +409,9 @@ class SuperAdminController extends Controller
     public function deleteAdmin(String $id){
         $admin = SuperAdmin::find($id);
         if($admin){
+            if($admin->image != "" && File::exists($admin->image)) {
+                File::delete($admin->image);
+            }
             $admin->delete();
             return response()->json([
                 'status' => true,
