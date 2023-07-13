@@ -123,9 +123,9 @@ class SuperAdminController extends Controller
     public function addAdmin(Request $request){
         $inputValidation = Validator::make($request->all(), [
             "fullname" => 'required',
-            "email" => 'required|email|unique:super_admins,email',
+            "email" => 'required|email:filter',
             "password" => 'required|confirmed',
-            "phone" => 'required|regex:/^[0-9]{10}$/|unique:super_admins,phone',
+            "phone" => 'required|regex:/^[0-9]{10}$/',
             'image' => $request->image ? 'file|mimes:jpg,jpeg,png|max:2048' : '',
         ]);
         if($inputValidation->fails()){
@@ -134,6 +134,16 @@ class SuperAdminController extends Controller
                 'message' => 'Invalid data entered',
                 'errors' => $inputValidation->errors(),
             ], 422);
+        }
+        if( SuperAdmin::where('email', $request->email)->exists() ){
+                return response()->json([
+                    'status' => false, 'message' => 'Email already exists',
+                ], 422);
+        }
+        if( SuperAdmin::where('phone', $request->phone)->exists() ){
+                return response()->json([
+                    'status' => false, 'message' => 'Phone already exists',
+                ], 422);
         }
         try{
             $image = null;
@@ -205,7 +215,7 @@ class SuperAdminController extends Controller
         if( ( $request->phone != SuperAdmin::where('id', $id)->value('phone') ) && 
             SuperAdmin::where('phone', $request->phone)->exists()){
                 return response()->json([
-                    'status' => false, 'message' => 'phone already exists',
+                    'status' => false, 'message' => 'Phone already exists',
                 ], 422);
         }
         try{
