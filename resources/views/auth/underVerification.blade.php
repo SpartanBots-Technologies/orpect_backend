@@ -20,7 +20,7 @@
                 
                 <table cellpadding="0" cellspacing="0" border="0" align="center" width="100%">
                     <tr>
-                        <td style="padding: 20px; height: 60px;  background-color: #fff; text-align: center;  border-bottom: 1px solid #f4f4f4;">
+                        <td style="padding: 10px; height: 60px;  background-color: #fff; text-align: center;  border-bottom: 1px solid #f4f4f4;">
                         <img src="https://orpect.com/static/media/orpect1.dfabd9d606236eba4ca2.png" width="200"/>
                         </td>
                     </tr>
@@ -43,7 +43,7 @@
     
                 <table cellpadding="0" cellspacing="0" border="0" align="center" width="100%">
                     <tr>
-                        <td style="padding: 10px; height: 60px;  text-align: center; background: #f6a21e; line-height: 2rem;">
+                        <td style="height: 40px;  text-align: center; background: #f6a21e; line-height: 2rem;">
                           <!-- Need More Help? <br/> -->
                           <!-- <a href="mailto:support@orpect.com" style="color: #134d75; font-weight: 600; text-decoration: none ; ">We're Here Ready to talk</a> -->
                         
