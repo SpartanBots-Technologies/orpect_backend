@@ -36,7 +36,7 @@
                             <p>This is your link for password reset :</p>
                             <p style="text-align: center; font-size: 20px; background: #134d75; color: #fff; padding: 8px 20px; font-size: 20px; border-radius: 5px; width: 100px;  margin: 10px auto;"><a href="{{$data['link']}}" target="_blank" style="text-decoration: none; color: #fff;">Click here</a> </p>
                         
-                        <p>This link will only be valid for 10 minutes.</p>
+                            <p style="text-align: center;"><b>This link will only be valid for 10 minutes.</b></p>
                   
                     <p style="line-height: 2rem;">If you did not request a Password Reset link, no further action is required. And Please make sure to change your account's password.                    </p>
        
