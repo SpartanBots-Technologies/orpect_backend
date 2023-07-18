@@ -399,9 +399,9 @@ class UserController extends Controller
                 $companydetails->update([
                     "is_deleted" => 1,
                 ]);
-                return response()->json([ 'status' => true, 'message' => "successfully deleted", ], 200);
+                return response()->json([ 'status' => true, 'message' => "Successfully deleted", ], 200);
             }catch(\Exception $e){
-                return response()->json([ 'status' => false, 'message' => $e, ], 400);
+                return response()->json([ 'status' => false, 'message' => "Some error occured", ], 400);
             }
         }else{
             return response()->json([ 'status' => false, 'message' => "Some error occured", ], 400);
@@ -487,5 +487,84 @@ class UserController extends Controller
             'status' => true,
             'pendingRequests' => $companydetails,
         ], 200);
+    }
+
+    public function getDeletedCompanies(){
+        $deletedCompanies = User::select(
+                                DB::raw('CONCAT(LCASE(REPLACE(company_name, " ", "")),"_", id) AS sid'),
+                                'company_name',
+                                'company_type',
+                                'full_name',
+                                'designation',
+                                'domain_name',
+                                'email',
+                                'image',
+                                'email_verified',
+                                'email_verified_at',
+                                'remember_token',
+                                DB::raw("DATE_FORMAT(created_at, '%d-%m-%Y') AS comp_created_at"),
+                                'is_deleted',
+                                'company_phone',
+                                'webmaster_email',
+                                'company_address',
+                                'company_city',
+                                'company_state',
+                                'company_country',
+                                'company_postal_code',
+                                'registration_number',
+                                'company_social_link',
+                                'is_account_verified',
+                                'taken_membership',
+                            )
+                            ->where('is_deleted', 1)
+                            ->paginate(10);
+        if($deletedCompanies){
+            return response()->json([
+                'status' => true,
+                'deletedCompanies' => $deletedCompanies,
+            ], 200);
+        }else{
+            return response()->json([ 'status' => false, 'message' => "No record Found", ], 404);
+        }
+    }
+
+    public function restoreCompany(String $id){
+        $companydetails = User::find($id);
+        if($companydetails && $companydetails->is_deleted == 1){
+            try{
+                DB::beginTransaction();
+                Employee::where('added_by', $id)->update([
+                    'is_deleted' => 0,
+                ]);
+                $companydetails->update([
+                    "is_deleted" => 0,
+                ]);
+                DB::commit();
+                return response()->json([ 'status' => true, 'message' => "Successfully restored", ], 200);
+            }catch(\Exception $e){
+                DB::rollback();
+                return response()->json([ 'status' => false, 'message' => "Some error occured while restoring", ], 400);
+            }
+        }else{
+            return response()->json([ 'status' => false, 'message' => "Some error occured", ], 400);
+        }
+    }
+
+    public function permanentlyDeleteCompany(String $id){
+        $companydetails = User::find($id);
+        if($companydetails){
+            try{
+                DB::beginTransaction();
+                Employee::where('added_by', $id)->delete();
+                $companydetails->delete();
+                DB::commit();
+                return response()->json([ 'status' => true, 'message' => "Successfully deleted", ], 200);
+            }catch(\Exception $e){
+                DB::rollback();
+                return response()->json([ 'status' => false, 'message' => "Some error occured while deleting", ], 400);
+            }
+        }else{
+            return response()->json([ 'status' => false, 'message' => "Some error occured", ], 400);
+        }
     }
 }
