@@ -490,7 +490,8 @@ class UserController extends Controller
         ], 200);
     }
 
-    public function getDeletedCompanies(){
+    public function getDeletedCompanies(Request $request){
+        $searchValue = $request->input('searchText', '');
         $deletedCompanies = User::select(
                                 DB::raw('CONCAT(LCASE(REPLACE(company_name, " ", "")),"_", id) AS sid'),
                                 'company_name',
@@ -517,8 +518,15 @@ class UserController extends Controller
                                 'is_account_verified',
                                 'taken_membership',
                             )
-                            ->where('is_deleted', 1)
-                            ->orderBy('deleted_at', 'desc')
+                            ->where('is_deleted', 1);
+                if (!empty($searchValue)) {
+                    $deletedCompanies->where(function ($query) use ($searchValue) {
+                        $query->where('company_name', 'LIKE', "%$searchValue%")
+                            ->orWhere('email', 'LIKE', "%$searchValue%")
+                            ->orWhere('domain_name', 'LIKE', "%$searchValue%");
+                    });
+                }
+        $deletedCompanies = $deletedCompanies->orderBy('deleted_at', 'desc')
                             ->paginate(10);
         if($deletedCompanies){
             return response()->json([
