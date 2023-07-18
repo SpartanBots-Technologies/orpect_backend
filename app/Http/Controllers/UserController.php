@@ -555,7 +555,32 @@ class UserController extends Controller
         if($companydetails){
             try{
                 DB::beginTransaction();
+                $allEmployees = Employee::where('added_by', $id)->get(['id', 'profile_image']);
+
+                // Delete the images from the database and file storage
+                foreach ($allEmployees as $employee) {
+                    if ($employee->profile_image) {
+                        // Check if the file exists before attempting to delete it
+                        if(File::exists($employee->profile_image)){
+                            File::delete($employee->profile_image);
+                        }
+
+                        // Update the image field in the database to null
+                        Employee::where('id', $employee->id)->update(['profile_image' => null]);
+                    }
+                }
+                // Delete all employees from the database
                 Employee::where('added_by', $id)->delete();
+
+                if ($companydetails->image) {
+                    // Check if the file exists before attempting to delete it
+                    if(File::exists($companydetails->image)){
+                        File::delete($companydetails->image);
+                    }
+
+                    // Update the image field in the database to null
+                    User::where('id', $companydetails->id)->update(['image' => null]);
+                }
                 $companydetails->delete();
                 DB::commit();
                 return response()->json([ 'status' => true, 'message' => "Successfully deleted", ], 200);
