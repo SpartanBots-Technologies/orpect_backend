@@ -398,6 +398,7 @@ class UserController extends Controller
                 ]);
                 $companydetails->update([
                     "is_deleted" => 1,
+                    "deleted_at" => now(),
                 ]);
                 return response()->json([ 'status' => true, 'message' => "Successfully deleted", ], 200);
             }catch(\Exception $e){
@@ -517,6 +518,7 @@ class UserController extends Controller
                                 'taken_membership',
                             )
                             ->where('is_deleted', 1)
+                            ->orderBy('deleted_at', 'desc')
                             ->paginate(10);
         if($deletedCompanies){
             return response()->json([
@@ -582,6 +584,7 @@ class UserController extends Controller
                     User::where('id', $companydetails->id)->update(['image' => null]);
                 }
                 $companydetails->delete();
+                Position::where("added_by", $id)->delete();
                 DB::commit();
                 return response()->json([ 'status' => true, 'message' => "Successfully deleted", ], 200);
             }catch(\Exception $e){
