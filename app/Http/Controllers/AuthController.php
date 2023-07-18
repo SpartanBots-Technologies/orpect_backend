@@ -416,7 +416,7 @@ class AuthController extends Controller
         }catch(\Exception $e){
             return response()->json([
                 'status' => false,
-                'message' => $e->getMessage(),
+                'message' => "Some exception occured",
             ], 400);
         }
     }
@@ -600,7 +600,7 @@ class AuthController extends Controller
         }catch(\Exception $e){
             return response()->json([
                 'status' => false,
-                'message' => $e->getMessage(),
+                'message' => "Some exception occured",
             ], 400);
         }
     }

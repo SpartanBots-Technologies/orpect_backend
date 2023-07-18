@@ -113,7 +113,7 @@ class EmployeeController extends Controller
         } catch(\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => $e->getMessage(),
+                'message' => "Some exception occured",
             ], 400);
         }
     }
@@ -185,17 +185,17 @@ class EmployeeController extends Controller
             if($employee) {
                 return response()->json([
                     'status' => true,
-                    'message' => "updated successfully",
+                    'message' => "Updated successfully",
                 ], 200);
             }
             return response()->json([
                 'status' => false,
-                'message' => "some error occured",
+                'message' => "Some error occured",
             ], 400);
         } catch(\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => $e->getMessage(),
+                'message' => "Some exception occured",
             ], 400);
         }
     }
@@ -250,7 +250,7 @@ class EmployeeController extends Controller
         } catch(\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => $e->getMessage(),
+                'message' => "Some exception occured",
             ], 400);
         }
     }
@@ -500,7 +500,7 @@ class EmployeeController extends Controller
             }
             return response()->json([
                 'status' => false,
-                'message' => strpos($e->getMessage(), 'array key') !== false ? 'Please make sure you have all the fields in CSV file' : $e->getMessage() ,
+                'message' => strpos($e->getMessage(), 'array key') !== false ? 'Please make sure you have all the fields in CSV file' : "Some exception occured while reading CSV" ,
             ], 400);
         }
     }
@@ -844,7 +844,7 @@ class EmployeeController extends Controller
         } catch(\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => $e->getMessage(),
+                'message' => "Some exception occured",
             ], 400);
         }
     }
@@ -1041,7 +1041,7 @@ class EmployeeController extends Controller
         } catch(\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => $e->getMessage(),
+                'message' => "Some exception occured",
             ], 400);
         }
     }
