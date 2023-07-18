@@ -31,6 +31,7 @@ class User extends Authenticatable
         'terms_and_conditions',
         'is_deleted',
         'deleted_by',
+        'deleted_at',
         'company_phone',	
         'webmaster_email',	
         'company_address',	
