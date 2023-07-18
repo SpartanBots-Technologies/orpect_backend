@@ -71,9 +71,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/updateUserImage', [UserController::class, 'updateUserImage']);
         Route::post('/updatePassword', [UserController::class, 'updateUserPassword']);
     });
-});
 
-Route::middleware('auth:sanctum')->group(function () {
     //apis for admin protected with admin middleware and sanctum
     Route::group(['prefix'=>'admin', 'middleware' => 'admin'],function(){
         Route::post('/logoutAdmin', [AuthController::class, 'logoutAdmin']);
@@ -105,5 +103,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/rejectCompany/{id}', [UserController::class, 'rejectCompany'])->middleware('separateNameAndId');
         Route::post('/verifyCompany/{id}', [UserController::class, 'verifyCompany'])->middleware('separateNameAndId');
         Route::get('/getPendingVerificationRequests', [UserController::class, 'getPendingVerificationRequests']);
+        Route::get('/getDeletedCompanies', [UserController::class, 'getDeletedCompanies']);
+        Route::post('/restoreCompany/{id}', [UserController::class, 'restoreCompany'])->middleware('separateNameAndId');
+        Route::delete('/permanentlyDeleteCompany/{id}', [UserController::class, 'permanentlyDeleteCompany'])->middleware('separateNameAndId');
     });
 });
