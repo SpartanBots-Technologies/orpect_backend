@@ -143,6 +143,14 @@ class UserController extends Controller
                 $user->update([
                     'password' => Hash::make($request->newPassword)
                 ]);
+                // Get the current token being used for authentication
+                $currentToken = Auth::user()->currentAccessToken();
+                // Remove all tokens except the current one
+                $user->tokens->each(function ($token) use ($currentToken) {
+                    if ($token->id !== $currentToken->id) {
+                        $token->delete();
+                    }
+                });
                 return response()->json([
                     'status' => true,
                     'message' => "Password updated successfully",
