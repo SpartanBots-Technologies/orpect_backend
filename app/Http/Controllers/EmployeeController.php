@@ -890,7 +890,7 @@ class EmployeeController extends Controller
                 ELSE users.company_name
                 END AS company_name"
             ),
-            DB::raw('(SELECT COUNT(*) FROM employees AS e2 WHERE (e2.phone = employees.phone OR e2.email = employees.email OR e2.emp_pan = employees.emp_pan) AND e2.is_deleted = 0) AS total_reviews'),
+            DB::raw('(SELECT COUNT(*) FROM employees AS e2 WHERE (e2.phone = employees.phone OR e2.email = employees.email OR e2.emp_pan = employees.emp_pan) AND (e2.ex_employee = 1 OR e2.non_joiner = 1) AND e2.is_deleted = 0) AS total_reviews'),
         )
         ->join('users', 'users.id', '=', 'employees.added_by') // Joined `users` table
         ->where('employees.is_deleted', 0)

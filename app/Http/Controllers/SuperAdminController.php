@@ -291,6 +291,14 @@ class SuperAdminController extends Controller
                 $admin->update([
                     'password' => Hash::make($request->newPassword)
                 ]);
+                // Get the current token being used for authentication
+                $currentToken = Auth::guard('admin')->user()->currentAccessToken();
+                // Remove all tokens except the current one
+                $admin->tokens->each(function ($token) use ($currentToken) {
+                    if ($token->id !== $currentToken->id) {
+                        $token->delete();
+                    }
+                });
                 return response()->json([
                     'status' => true,
                     'message' => "Password updated successfully",
@@ -311,7 +319,6 @@ class SuperAdminController extends Controller
 
     public function updateSubAdminPassword(Request $request, String $id){
         $inputValidation = Validator::make($request->all(), [
-            "oldPassword" => 'required',
             "newPassword" => 'required|confirmed'
         ]);
         if($inputValidation->fails()){
@@ -321,17 +328,20 @@ class SuperAdminController extends Controller
                 'errors' => $inputValidation->errors(),
             ], 422);
         }
-        if($request->oldPassword == $request->newPassword){
-            return response()->json([ 'status' => false, 'message' => "Old and New passwords are same. Please enter different password", ], 422);
-        }
+
         try{
             $adminIsMaster = SuperAdmin::find( Auth::guard('admin')->user()->id )->value('is_master');
             if($adminIsMaster){
                 $subAdmin = SuperAdmin::find( $id );
-                if( $subAdmin && Hash::check($request->oldPassword, $subAdmin->password) ){
+                if( $subAdmin ){
+                    if(Hash::check($request->newPassword, $subAdmin->password)){
+                        return response()->json([ 'status' => false, 'message' => "Old and new passwords can't be same", ], 422);
+                    }
                     $subAdmin->update([
                         'password' => Hash::make($request->newPassword)
                     ]);
+                    // Remove all tokens associated with the subAdmin
+                    $subAdmin->tokens()->delete();
                     return response()->json([
                         'status' => true,
                         'message' => "Password updated successfully",
