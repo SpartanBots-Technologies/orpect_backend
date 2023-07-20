@@ -22,6 +22,11 @@ use App\Http\Controllers\SuperAdminController;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+//Employee login, signup, forget
+Route::post('/registerEmployee', [AuthController::class, 'registerEmployee']);
+Route::post('/sendOTPEmployee', [AuthController::class, 'sendOTPEmployee']);
+
 Route::group(['prefix'=>'admin'],function(){
     Route::post('/loginAdmin', [AuthController::class, 'loginAdmin']);
     Route::post('/forgot-password', [AuthController::class, 'forgotPasswordAdmin']);

@@ -7,6 +7,7 @@ use Throwable;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Illuminate\Database\QueryException;
 class Handler extends ExceptionHandler
 {
     /**
@@ -52,6 +53,13 @@ class Handler extends ExceptionHandler
                 'error' => 'Not Found',
                 'message' => 'The requested resource could not be found.'
             ], 404);
+        }
+        if ($exception instanceof QueryException) {
+            return response()->json([
+                'statusCode' => '500',
+                'error' => 'Database Error',
+                'message' => 'An error occurred while executing the database query.'
+            ], 500);
         }
         return parent::render($request, $exception);
     }

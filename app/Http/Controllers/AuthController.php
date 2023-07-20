@@ -17,6 +17,7 @@ use App\Models\EmailVerification;
 use App\Models\Position;
 use App\Models\SuperAdmin;
 use App\Models\SupportEmail;
+use App\Models\EmployeeLogin;
 
 class AuthController extends Controller
 {
@@ -653,5 +654,159 @@ class AuthController extends Controller
             ], 400);
         }
 
+    }
+
+    // Employee Authentication process
+    public function sendOTPEmployee(Request $request){
+        $inputValidation = Validator::make($request->all(), [
+            "email" => 'required|email:filter',
+        ]);
+        if($inputValidation->fails()){
+            return response()->json([
+                'status' => false,
+                'message' => 'Please enter a valid email',
+                'errors' => $inputValidation->errors(),
+            ], 422);
+        }
+        if( EmployeeLogin::where('email', $request->companyPhone)->exists() ){
+            return response()->json([
+                "status" => false,
+                'message' => 'Email already exists',
+            ], 422);
+        }
+        $badDomains = [
+            "yopmail.com",
+            "robot-mail.com",
+            "maildrop.cc",
+            "dispostable.com",
+            "mailinator.com",
+            "guerrillamail.com",
+        ];
+        
+        $domain = substr(strrchr($request->email, "@"), 1); // Extract the domain from the email
+
+        if (in_array($domain, $badDomains)) {
+            return response()->json([
+                'status' => false,
+                'messsage' => "Please enter a valid email",
+            ], 422);
+        }
+        $randOtp = random_int(100000, 999999);
+        $useremail = $request->email;
+
+        $data = [
+            'userName' => $useremail,
+            'CompanyName' => 'ORPECT',
+            'websiteLink' => config('app.url'),
+            'otp' => $randOtp,
+        ];
+
+        EmailVerification::updateOrCreate(
+            ['email' => $request->email],
+            [
+                "email" => $request->email,
+                "otp" => $randOtp
+            ]
+        );
+
+        if( 
+            Mail::send('auth.OtpEmail', ['data' => $data], function ($message) use ($useremail){
+            $message->from('support@orpect.com', 'ORPECT');
+            $message->to($useremail)->subject('ORPECT - Email Verification OTP'); }) 
+        ){
+            return response()->json([
+                'status' => true,
+                'messsage' => 'Otp sent successfully',
+            ], 200);
+        }
+        return response()->json([
+            'message' => 'Some error occured',
+        ], 401);
+    }
+
+    public function registerEmployee(Request $request){
+
+        $inputValidation = Validator::make($request->all(), [
+            "fullname" => 'required',
+            "username" => 'required',
+            "gender" => 'required',
+            "phone" => 'required|regex:/^[0-9]{10}$/',
+            "email" => 'required|email:filter',
+            "date_of_birth" => 'required|date',
+            "password" => 'required|min:6|confirmed',
+            "tax_number" => 'required',
+            "otp" => 'required',
+        ]);
+        if($inputValidation->fails()){
+            return response()->json([
+                'message' => 'Invalid data entered',
+                'errors' => $inputValidation->errors(),
+            ], 422);
+        }
+        if( EmployeeLogin::where('phone', $request->phone)->exists() ){
+            return response()->json([
+                "status" => false,
+                'message' => 'Phone number already exists',
+            ], 422);
+        }
+        if( EmployeeLogin::where('email', $request->email)->exists() ){
+            return response()->json([
+                "status" => false,
+                'message' => 'Email already exists',
+            ], 422);
+        }
+        if( EmailVerification::where('email', $request->email)->where('otp', $request->otp)->exists() ){
+            $timeVerification = EmailVerification::select('created_at')->where('email', $request->email)->where('otp', $request->otp)->first();
+            if($timeVerification){
+                $to = Carbon::createFromFormat('Y-m-d H:i:s', $timeVerification->created_at);
+                $from = Carbon::createFromFormat('Y-m-d H:i:s', now());
+                $diff_in_minutes = $to->diffInMinutes($from);
+                EmailVerification::where('email', $request->email)->where('otp', $request->otp)->delete();
+                if( $diff_in_minutes > 10 ){
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'OTP Expired',
+                    ], 400);
+                }
+            }
+        }else{
+            return response()->json([
+                'status' => false,
+                'message' => "OTP expired or invalid",
+            ], 422);
+        }
+
+        $employee = EmployeeLogin::create([
+            "fullname" => $request->fullname,
+            "username" => $request->username,
+            "gender" => $request->gender,
+            "phone" => $request->phone,
+            "email" => $request->email,
+            "password" => Hash::make($request->password),
+            "date_of_birth" => $request->date_of_birth,
+            "tax_number" => $request->tax_number != "" ? $request->tax_number : null,
+        ]);
+        // $useremail = $request->email;
+        // $data = [
+        //     'CompanyName' => 'ORPECT',
+        //     'websiteLink' => config('app.url'),
+        //     'websiteLogin' => config('app.url').'login',
+        // ];
+        // try{ 
+        //     Mail::send('auth.underVerification', ['data' => $data], function ($message) use ($useremail){
+        //         $message->from('support@orpect.com', 'ORPECT');
+        //         $message->to($useremail)->subject('ORPECT - Registration successful. Account under verification'); 
+        //     });
+        // } catch(\Exception $e){
+        // }
+        if( $employee ){
+            return response()->json([
+                'status' => true,
+                'message' => "Employee successfully registered",
+            ], 200);
+        }
+        return response()->json([
+            'message' => 'Some error occured',
+        ], 401);
     }
 }
