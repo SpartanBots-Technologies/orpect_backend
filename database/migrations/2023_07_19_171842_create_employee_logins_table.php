@@ -31,6 +31,7 @@ return new class extends Migration
             $table->tinyInteger('taken_membership')->default(0);
             $table->tinyInteger('is_deleted')->default(0);
             $table->tinyInteger('deleted_at')->default(0);
+            $table->tinyInteger('is_verified')->default(0);
             $table->timestamps();
         });
     }

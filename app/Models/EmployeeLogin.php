@@ -29,5 +29,6 @@ class EmployeeLogin extends Model
         'taken_membership',
         'is_deleted',
         'deleted_at',
+        'is_verified',
     ];
 }
