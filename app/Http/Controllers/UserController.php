@@ -454,7 +454,7 @@ class UserController extends Controller
             $useremail = $companydetails->email;
             $companydetails->delete();
             $data = [
-                'CompanyName' => 'Orpect',
+                'CompanyName' => 'ORPECT',
             ];
             try{ 
                 Mail::send('auth.rejectAccount', ['data' => $data], function ($message) use ($useremail){

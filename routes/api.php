@@ -43,6 +43,7 @@ Route::post('forgot-password', [AuthController::class, 'forgotpassword']);
 Route::post('reset-password', [AuthController::class, 'resetPassword']);
 Route::post('isTokenValid', [AuthController::class, 'isTokenValid']);
 Route::post('/sendSupportMail', [AuthController::class, 'sendSupportMail']);
+Route::post('/sendJoinOurWaitlistMail', [AuthController::class, 'sendJoinOurWaitlistMail']);
 Route::get('getDesignations', [SuperAdminController::class, 'getDesignations']);
 Route::get('getCompanyTypes', [SuperAdminController::class, 'getCompanyTypes']);
 

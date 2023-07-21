@@ -635,6 +635,7 @@ class AuthController extends Controller
                 'subject' => $request->subject != "" ? $request->subject : "",
                 'message' => $request->message,
                 'websiteLink' => config('app.url'),
+                'CompanyName' => "ORPECT",
             ];
             $useremail = "support@orpect.com";
             Mail::send('auth.supportEmail', ['data' => $data], function ($message) use ($useremail, $senderName, $senderEmail){
@@ -656,6 +657,56 @@ class AuthController extends Controller
 
     }
 
+    public function sendJoinOurWaitlistMail(Request $request){
+        $inputValidation = Validator::make($request->all(), [
+            "name" => 'required',
+            "companyName" => 'required',
+            "email" => 'required|email:filter',
+            "phone" => 'required|regex:/^[0-9]{10}$/',
+        ]);
+        if($inputValidation->fails()){
+            return response()->json([
+                'message' => 'Invalid data entered',
+                'errors' => $inputValidation->errors(),
+            ], 422);
+        }
+
+        try{
+            $senderName = $request->name;
+            $senderEmail = $request->email;
+            DB::table('waiting_lists')->insert([
+                "name" => $senderName,
+                "company_name" => $request->companyName,
+                "email" => $senderEmail,
+                "phone" => $request->phone,
+            ]);
+            $data = [
+                'name' => $senderName,
+                'email' => $senderEmail,
+                'companyName' => $request->companyName,
+                'phone' => $request->phone,
+                'websiteLink' => config('app.url'),
+                'company' => "ORPECT",
+            ];
+            $useremail = "testspartanbots@gmail.com";
+            Mail::send('auth.joinOurWaitlist', ['data' => $data], function ($message) use ($useremail, $senderName, $senderEmail){
+                $message->from('support@orpect.com', $senderName . ' via ORPECT');
+                $message->to($useremail)->subject('ORPECT - Join Our Waitlist');
+                $message->replyTo($senderEmail, $senderName);
+            });
+
+            return response()->json([
+                'status' => true,
+                'message' => "Message sent successfully",
+            ], 200);
+        }catch(\Exception $e){
+            return response()->json([
+                'status' => false,
+                'message' => "Something went wrong",
+            ], 400);
+        }
+
+    }
     // Employee Authentication process
     public function sendOTPEmployee(Request $request){
         $inputValidation = Validator::make($request->all(), [
