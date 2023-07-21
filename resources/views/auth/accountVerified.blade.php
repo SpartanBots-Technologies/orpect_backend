@@ -21,7 +21,7 @@
                 <table cellpadding="0" cellspacing="0" border="0" align="center" width="100%">
                     <tr>
                         <td style="padding: 10px; height: 60px; background-color: #fff; text-align: center;  border-bottom: 1px solid #f4f4f4;">
-                        <img src="https://orpect.com/static/media/orpect1.dfabd9d606236eba4ca2.png" alt="orpect.com" width="200"/>
+                        <img src="https://orpect.com/static/media/orpect1.dfabd9d606236eba4ca2.png" title="orpect.com" alt="orpect.com" width="200"/>
                         </td>
                     </tr>
                 </table>

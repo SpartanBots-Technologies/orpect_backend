@@ -18,6 +18,7 @@ use App\Models\Position;
 use App\Models\SuperAdmin;
 use App\Models\SupportEmail;
 use App\Models\EmployeeLogin;
+use App\Models\WaitingList;
 
 class AuthController extends Controller
 {
@@ -674,7 +675,7 @@ class AuthController extends Controller
         try{
             $senderName = $request->name;
             $senderEmail = $request->email;
-            DB::table('waiting_lists')->insert([
+            WaitingList::create([
                 "name" => $senderName,
                 "company_name" => $request->companyName,
                 "email" => $senderEmail,
@@ -688,7 +689,7 @@ class AuthController extends Controller
                 'websiteLink' => config('app.url'),
                 'company' => "ORPECT",
             ];
-            $useremail = "testspartanbots@gmail.com";
+            $useremail = "support@orpect.com";
             Mail::send('auth.joinOurWaitlist', ['data' => $data], function ($message) use ($useremail, $senderName, $senderEmail){
                 $message->from('support@orpect.com', $senderName . ' via ORPECT');
                 $message->to($useremail)->subject('ORPECT - Join Our Waitlist');
