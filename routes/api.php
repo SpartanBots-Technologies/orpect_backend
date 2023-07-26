@@ -26,6 +26,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //Employee login, signup, forget
 Route::post('/registerEmployee', [AuthController::class, 'registerEmployee']);
 Route::post('/sendOTPEmployee', [AuthController::class, 'sendOTPEmployee']);
+// Route::post('/loginEmployee', [AuthController::class, 'loginEmployee']);
 
 Route::group(['prefix'=>'admin'],function(){
     Route::post('/loginAdmin', [AuthController::class, 'loginAdmin']);

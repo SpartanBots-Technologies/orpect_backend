@@ -275,10 +275,17 @@ class AuthController extends Controller
                 'errors' => $inputValidation->errors(),
             ], 422);
         }
-        if( Auth::attempt([
+        $isAuthUser = Auth::attempt([
             'email' => $request->input('email'),
             'password' => $request->input('password')
-        ])){
+        ]);
+        $isAuthEmp = false;
+        $emp = EmployeeLogin::where('email', $request->email)->first();
+        if($emp && Hash::check($request->password, $emp->password)){
+            $isAuthEmp = true;
+        }
+
+        if( $isAuthUser ){
             $user = Auth::user();
             if ($user->is_deleted == 0) {
                 if ($user->is_account_verified == 1) {
@@ -288,6 +295,7 @@ class AuthController extends Controller
                         'is_verified' => 1,
                         'user' => $user,
                         'token' => $token,
+                        'role' => "user",
                     ], 200);
                 } else {
                     return response()->json([
@@ -301,6 +309,22 @@ class AuthController extends Controller
                     'status' => false,
                     'message' => 'Account has been removed by super admin',
                 ], 401);
+            }
+        }else if( $isAuthEmp ){
+
+            if($emp->is_deleted == 0){
+                $token = $emp->createToken($request->email.'_api_token')->plainTextToken;
+                return response()->json([
+                    'status' => true,
+                    'emp' => $emp,
+                    'token' => $token,
+                    'role' => "employee",
+                ], 200);
+            }else{
+                return response()->json([
+                    'status' => false,
+                    'messsage' => "Account has been removed",
+                ], 401); 
             }
         }else{
             return response()->json([
